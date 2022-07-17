@@ -2,7 +2,7 @@ package gofk
 
 import (
 	"github.com/gin-gonic/gin"
-	"gofks/ifac"
+	"github.com/bhmy-shm/gofks/ifac"
 	"reflect"
 	"sync"
 )

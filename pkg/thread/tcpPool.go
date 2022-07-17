@@ -3,7 +3,7 @@ package thread
 import (
 	"errors"
 	"fmt"
-	"gofk/pkg/errorx"
+	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"sync"
 	"time"
 )
@@ -230,4 +230,3 @@ func (c *ChanPool) Release() {
 func (c *ChanPool) Len() int {
 	return len(c.getConns())
 }
-

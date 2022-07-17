@@ -2,7 +2,7 @@ package gofk
 
 import (
 	"fmt"
-	"gofks/pkg/config"
+	"github.com/bhmy-shm/gofks/pkg/config"
 	"reflect"
 	"strings"
 )
