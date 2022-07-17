@@ -1,4 +1,4 @@
-module gofks
+module github.com/bhmy-shm/gofks
 
 go 1.16
 

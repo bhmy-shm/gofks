@@ -1,5 +1,23 @@
 Server:
+
   port: 8081
+  mysql:
+    root:
+    password:
+    address:
+    database:
+  redis:
+    address:
+    port:
+    password:
+
+ElesticSearch:
+
+Mq:
+
+Register:
+
+
 
 config:
   user:
@@ -7,5 +25,3 @@ config:
     age: 21
 
 
-Db:
-  dsn: "root:123456@tcp(127.0.0.1:3306)/corev2?charset=utf8mb4&parseTime=True&loc=Local"
