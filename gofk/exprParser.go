@@ -1,4 +1,4 @@
-package ifac
+package gofk
 
 import (
 	"bytes"

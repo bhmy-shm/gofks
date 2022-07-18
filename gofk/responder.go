@@ -2,7 +2,6 @@ package gofk
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/bhmy-shm/gofks/ifac"
 	"reflect"
 	"sync"
 )
@@ -14,16 +13,10 @@ func getResponderList() []Responder {
 	onec_resp_list.Do(func() {
 		responderList = []Responder{
 			(StringResponder)(nil),
-			(ModelResponder)(nil),
-			(ModelsResponder)(nil),
+			(JsonResponder)(nil),
 		}
 	})
 	return responderList
-}
-
-
-type Responder interface {
-	RespondTo() gin.HandlerFunc
 }
 
 func Convert(handle interface{}) gin.HandlerFunc {
@@ -42,7 +35,6 @@ func Convert(handle interface{}) gin.HandlerFunc {
 	return nil
 }
 
-
 type StringResponder func(*gin.Context) string
 
 func (s StringResponder) RespondTo() gin.HandlerFunc {
@@ -51,19 +43,15 @@ func (s StringResponder) RespondTo() gin.HandlerFunc {
 	}
 }
 
-type ModelResponder func(*gin.Context) ifac.Model
+type JsonResponder func(*gin.Context) Resp
 
-func (m ModelResponder) RespondTo() gin.HandlerFunc {
+func (j JsonResponder) RespondTo() gin.HandlerFunc {
 	return func(context *gin.Context) {
-		context.JSON(200, m(context))
-	}
-}
-
-type ModelsResponder func(*gin.Context) ifac.Models
-
-func (m ModelsResponder) RespondTo() gin.HandlerFunc {
-	return func(context *gin.Context) {
-		context.Writer.Header().Set("Content-type", "application/json")
-		context.Writer.WriteString(string(m(context)))
+		//getQuery := getFairingHandler().handlerFairing(this, context).(Query)
+		//ret, err := queryForMapsByInterface(getQuery)
+		//if err != nil {
+		//	panic(err)
+		//}
+		context.JSON(200, j(context))
 	}
 }

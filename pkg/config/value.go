@@ -5,14 +5,6 @@ import (
 	"errors"
 )
 
-type Value interface {
-	Bool() (bool, error)
-	Int() (int, error)
-	String() (string, error)
-	Float64() (float64, error)
-	Json() (string, error)
-}
-
 type value struct {
 	n interface{}
 	m map[interface{}]interface{}

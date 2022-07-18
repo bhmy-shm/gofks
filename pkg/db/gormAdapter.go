@@ -12,9 +12,11 @@ import (
 
 type GormAdapter struct {
 	*gorm.DB
+	//写入操作
+	//查询操作
 }
 
-func NewGormAdapter() *GormAdapter {
+func GormPlug() *GormAdapter {
 
 	dsn := "root:123456@tcp(127.0.0.1:3306)/corev2?charset=utf8mb4&parseTime=True&loc=Local"
 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{
@@ -60,4 +62,8 @@ func (this *GormAdapter) FindById(model interface{}, id int) []byte {
 		log.Fatalln("data marshal to string is failed", err)
 	}
 	return buf
+}
+
+func (this *GormAdapter) FindBySerial(model interface{}, serial string) []byte {
+	return nil
 }

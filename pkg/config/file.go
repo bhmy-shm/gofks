@@ -1,18 +1,40 @@
 package config
 
 import (
+	"crypto/md5"
+	"fmt"
 	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"io/ioutil"
 	"log"
 	"os"
+	"time"
 )
 
 type FileMap map[string]interface{}
 
 var GlobalConf = make(FileMap)
 
+// ChangeSet 文件源，data存放文件源所包含的内容，其余字段声明文件的路径等fileInfo信息
+
+type ChangeSet struct {
+	Data      []byte
+	Checksum  string //md5校验值确保唯一
+	Format    string
+	Source    string
+	Timestamp time.Time
+}
+
+func (c *ChangeSet) Sum() string {
+	h := md5.New()
+	h.Write(c.Data)
+	return fmt.Sprintf("%x", h.Sum(nil))
+}
+
+// file 具体文件对象
+
 type File struct {
 	path    string
+	yaml    []byte
 	opts    Options
 	set     *ChangeSet
 	confMap FileMap
@@ -45,7 +67,7 @@ func (f *File) Read() (*File, error) {
 	if err != nil {
 		return nil, errorx.FileReadFail
 	}
-	log.Println("file Read 读取到的文件内容：", string(b))
+	f.yaml = b
 
 	//判断文件是否存在，拿到文件的详细信息
 	info, err := fh.Stat()
@@ -94,4 +116,9 @@ func (f *File) GetConf() FileMap {
 	return f.confMap
 }
 
-
+func (f *File) GetYaml() string {
+	if f.yaml == nil {
+		return ""
+	}
+	return string(f.yaml)
+}

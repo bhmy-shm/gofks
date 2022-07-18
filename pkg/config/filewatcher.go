@@ -7,11 +7,6 @@ import (
 	"os"
 )
 
-type Watcher interface {
-	Next() (*File, error)
-	Stop() error
-}
-
 type watcher struct {
 	f *File
 

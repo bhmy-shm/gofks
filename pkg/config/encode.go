@@ -5,12 +5,6 @@ import (
 	"gopkg.in/yaml.v2"
 )
 
-type Encoder interface {
-	Encode(interface{}) ([]byte, error)	//编码
-	Decode([]byte, interface{}) error	//解码
-	String() string //返回文件名字
-}
-
 type jsonEncoder struct{}
 
 func (j jsonEncoder) Encode(v interface{}) ([]byte, error) {

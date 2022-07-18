@@ -2,7 +2,6 @@ package gofk
 
 import (
 	"fmt"
-	"github.com/bhmy-shm/gofks/ifac"
 	"github.com/bhmy-shm/gofks/pkg/config"
 	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"github.com/bhmy-shm/gofks/pkg/thread"
@@ -28,11 +27,10 @@ func Ignite() *Gofk {
 	g := &Gofk{engine: gin.New(), beanFactory: NewBeanFactory()}
 
 	g.engine.Use(errorx.ErrorHandler())
-	g.beanFactory.setBean(config.InitSysConfig())
 	return g
 }
 
-func (g *Gofk) Watcher() {
+func (g *Gofk) Watcher() *Gofk {
 
 	f, err := config.LoadFile()
 	errorx.Error(err, "读取监听配置文件失败")
@@ -42,11 +40,12 @@ func (g *Gofk) Watcher() {
 
 	//协程监听更新config文件
 	go config.ReadWatcher(g.file)
+	return g
 }
 
 func (g *Gofk) Launch() {
 	var (
-		port int
+		port = 8080
 		err  error
 	)
 	//判断是否存在配置文件并转换成map进行记录
@@ -57,9 +56,6 @@ func (g *Gofk) Launch() {
 			errorx.Error(err)
 		}
 	}
-
-	//如果没有生成配置记录则走默认端口号
-	port = 8080
 
 	//启动定时任务
 	thread.GetCronTask().Start()
@@ -76,7 +72,7 @@ func (g *Gofk) Handle(httpMethod, relativePath string, handlers interface{}) *Go
 	return g
 }
 
-func (g *Gofk) Attach(f ifac.Fairing) *Gofk {
+func (g *Gofk) Attach(f Fairing) *Gofk {
 	g.engine.Use(func(context *gin.Context) {
 		err := f.OnRequest(context)
 		if err != nil {
