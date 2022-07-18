@@ -2,6 +2,7 @@ package gofk
 
 import (
 	"fmt"
+	"github.com/bhmy-shm/gofks/Injector"
 	"github.com/bhmy-shm/gofks/pkg/config"
 	"reflect"
 	"strings"
@@ -28,8 +29,7 @@ func init() {
 }
 
 type Value struct {
-	tag         reflect.StructTag
-	Beanfactory *BeanFactory
+	tag reflect.StructTag
 }
 
 func (this *Value) SetTag(tag reflect.StructTag) {
@@ -44,7 +44,7 @@ func (this *Value) String() string {
 	}
 
 	prefix := strings.Split(get_prefix, ".")
-	if conf := this.Beanfactory.GetBean(new(config.SysConfig)); conf != nil {
+	if conf := Injector.BeanFactory.Get((*config.SysConfig)(nil)); conf != nil {
 		get_value := config.GetConfigValue(conf.(*config.SysConfig).Config, prefix, 0)
 		if get_value != nil {
 			return fmt.Sprintf("%v", get_value)

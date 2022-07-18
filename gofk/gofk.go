@@ -3,6 +3,7 @@ package gofk
 import (
 	"fmt"
 	"github.com/bhmy-shm/gofks/Injector"
+	expr2 "github.com/bhmy-shm/gofks/expr"
 	"github.com/bhmy-shm/gofks/pkg/config"
 	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"github.com/bhmy-shm/gofks/pkg/thread"
@@ -30,17 +31,15 @@ func getInnerRouter() *GoftTree {
 }
 
 type Gofk struct {
-	engine      *gin.Engine
-	group       *gin.RouterGroup       //路由分组
-	file        *config.File           //配置文件
-	beanFactory *BeanFactory           //注解、依赖注入
-	exprData    map[string]interface{} //表达式
+	engine   *gin.Engine
+	group    *gin.RouterGroup       //路由分组
+	file     *config.File           //配置文件
+	exprData map[string]interface{} //表达式
 }
 
 func Ignite() *Gofk {
 	g := &Gofk{engine: gin.New(),
-		beanFactory: NewBeanFactory(),
-		exprData:    map[string]interface{}{},
+		exprData: map[string]interface{}{},
 	}
 
 	g.engine.Use(errorx.ErrorHandler())
@@ -104,17 +103,16 @@ func (g *Gofk) Beans(beans ...Bean) *Gofk {
 	//取出Bean的名称，然后加入到 exprData 里面
 	for _, bean := range beans {
 		g.exprData[bean.Name()] = bean
+		Injector.BeanFactory.Set(bean)
 	}
-	g.beanFactory.setBean(beans...)
 	return g
 }
 
 func (g *Gofk) Mount(group string, classes ...IClass) *Gofk {
 	g.group = g.engine.Group(group)
 	for _, class := range classes {
-		class.Build(g)              //挂载路由
-		g.beanFactory.inject(class) //处理注解
-		g.Beans(class)              //处理路由中的任务（表达式任务）
+		class.Build(g) //挂载路由
+		g.Beans(class) //处理路由中的任务（表达式任务）
 	}
 	return g
 }
@@ -126,10 +124,10 @@ func (g *Gofk) Cron(cron string, expr interface{}) *Gofk {
 	case func():
 		f := expr.(func())
 		_, err = thread.GetCronTask().AddFunc(cron, f)
-	case Expr:
-		exp := expr.(Expr) //这里的 exp 就是传入的 表达式
+	case expr2.Expr:
+		exp := expr.(expr2.Expr) //这里的 exp 就是传入的 表达式
 		_, err = thread.GetCronTask().AddFunc(cron, func() {
-			_, expErr := ExecExpr(exp, g.exprData) //处理表达式
+			_, expErr := expr2.ExecExpr(exp, g.exprData) //处理表达式
 			if expErr != nil {
 				log.Println(expErr)
 			}

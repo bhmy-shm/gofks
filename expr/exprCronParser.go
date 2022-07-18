@@ -1,4 +1,4 @@
-package gofk
+package expr
 
 import (
 	"bytes"
@@ -8,7 +8,8 @@ import (
 
 type Expr string
 
-//执行表达式，临时方法后期需要修改
+//计划任务 执行表达式
+
 func ExecExpr(expr Expr, data map[string]interface{}) (string, error) {
 
 	tpl := template.New("expr").Funcs(map[string]interface{}{
