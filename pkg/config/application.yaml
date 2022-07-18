@@ -1,27 +1,27 @@
 Server:
-
   port: 8081
-  mysql:
-    root:
-    password:
-    address:
-    database:
-  redis:
-    address:
-    port:
-    password:
 
-ElesticSearch:
+Mysql:
+  root: root
+  password: 123456
+  address: 127.0.0.1:3306
+  database: corev2
+
+Redis:
+  address: localhost
+  port: 2379
+  password: 12345
+
+ElesticSearch: 1234
 
 Mq:
 
 Register:
 
 
+User:
+  score: 100
+  age: 21
 
-config:
-  user:
-    score: 100
-    age: 21
 
 

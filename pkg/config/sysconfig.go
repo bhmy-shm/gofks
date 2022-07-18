@@ -37,7 +37,6 @@ type SysConfig struct {
 	Config UserConfig
 }
 
-
 func loadConfigFile() []byte {
 	dir, _ := os.Getwd()
 	file := dir + "/application.yaml"

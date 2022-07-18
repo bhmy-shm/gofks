@@ -1,39 +1,25 @@
 package config
 
-import "testing"
+import (
+	"log"
+	"testing"
+)
 
-func TestReader(t *testing.T) {
-	bb := []byte(`{"foo": "bar", "baz": {"bar": "cat"}}`)
-
-	type data struct {
-		path  []string
-		value string
-	}
-	var datas []data
-	datas = append(datas, data{
-		path:  []string{"foo"},
-		value: "bar",
-	})
-	datas = append(datas, data{
-		path:  []string{"baz", "bar"},
-		value: "cat",
-	})
-
-	r := NewReader()
-
-	c, err := r.Merge(&ChangeSet{Data: bb}, &ChangeSet{})
+//读取文件
+func TestLoadFile(t *testing.T) {
+	f, err := LoadFile()
 	if err != nil {
-		t.Fatal(err)
+		log.Fatalln(err)
 	}
+	f.YamlMerge()
 
-	values, err := r.Values(c)
+	//开启监听
+	go ReadWatcher(f)
+
+	d,err := GetPath("Server","port").Int()
 	if err != nil {
-		t.Fatal(err)
+		log.Println(err)
 	}
-
-	for _, test := range datas {
-		if v := values.Get(test.path...).String(""); v != test.value {
-			t.Fatalf("Expected %s got %s for path %v", test.value, v, test.path)
-		}
-	}
+	log.Println("data=", d)
+	select {}
 }

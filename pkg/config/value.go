@@ -1,1 +1,92 @@
 package config
+
+import (
+	"bytes"
+	"errors"
+)
+
+type Value interface {
+	Bool() (bool, error)
+	Int() (int, error)
+	String() (string, error)
+	Float64() (float64, error)
+	Json() (string, error)
+}
+
+type value struct {
+	n interface{}
+	m map[interface{}]interface{}
+}
+
+func newValue(data interface{}) Value {
+	if data == nil {
+		return nil
+	}
+	res := value{}
+
+	switch data.(type) {
+	case map[interface{}]interface{}:
+		res.m = data.(map[interface{}]interface{})
+	default:
+		res.n = data
+	}
+	return res
+}
+
+func (v value) Bool() (bool, error) {
+	if s, ok := (v.n).(bool); ok {
+		return s, nil
+	}
+	return false, errors.New("type assertion to bool failed")
+}
+
+func (v value) Int() (int, error) {
+	if s, ok := (v.n).(int); ok {
+		return s, nil
+	}
+	return 0, errors.New("type assertion to int failed")
+}
+
+func (v value) String() (string, error) {
+	if s, ok := (v.n).(string); ok {
+		return s, nil
+	}
+	return "", errors.New("type assertion to int failed")
+}
+
+func (v value) Float64() (float64, error) {
+	if s, ok := (v.n).(float64); ok {
+		return s, nil
+	}
+	return 0.0, errors.New("type assertion to int failed")
+}
+
+func (v value) Json() (string, error) {
+	if v.m == nil {
+		return "", errors.New("Value does not contain a map type to map JSON ")
+	}
+
+	count := 0
+	l := len(v.m)
+	buf := bytes.Buffer{}
+
+	buf.WriteByte('{')
+	for k, vv := range v.m {
+		count++
+		buf.WriteByte('"')
+		buf.WriteString(k.(string))
+		buf.WriteByte('"')
+
+		buf.WriteByte(':')
+
+		buf.WriteByte('"')
+		buf.WriteString(Strval(vv))
+		buf.WriteByte('"')
+
+		if count < l {
+			buf.WriteByte(',')
+		}
+	}
+	buf.WriteByte('}')
+	return buf.String(), nil
+}
