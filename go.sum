@@ -1,3 +1,5 @@
+github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220715204823-f1df3164ca2c h1:4KdBasbkBGsTPOIaD1Mr2IL4b1ifSbW29IF7WPrnBNY=
+github.com/antlr/antlr4/runtime/Go/antlr v0.0.0-20220715204823-f1df3164ca2c/go.mod h1:F7bn7fEU90QkQ3tnmaTx3LTKLEDqnwWODIYppRQ5hnY=
 github.com/cespare/xxhash/v2 v2.1.2 h1:YRXhKfTDauu4ajMg1TPgFO5jnlC2HCbmLXMcTG5cbYE=
 github.com/cespare/xxhash/v2 v2.1.2/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=

@@ -5,6 +5,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+const (
+	HTTP_STATUS = "GOFT_STATUS"
+)
+
 var (
 	ErrMaxActiveConnReached = errors.New("MaxActiveConnReached")
 	ErrClosed               = errors.New("pool is closed")
@@ -31,4 +35,9 @@ func Error(err error, format ...string) {
 		}
 		panic(errMsg)
 	}
+}
+
+func Throw(err string, code int, context *gin.Context) {
+	context.Set(HTTP_STATUS, code)
+	panic(err)
 }

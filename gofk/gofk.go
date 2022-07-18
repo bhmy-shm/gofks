@@ -2,6 +2,7 @@ package gofk
 
 import (
 	"fmt"
+	"github.com/bhmy-shm/gofks/Injector"
 	"github.com/bhmy-shm/gofks/pkg/config"
 	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"github.com/bhmy-shm/gofks/pkg/thread"
@@ -10,21 +11,37 @@ import (
 	"net/http"
 	"os"
 	"runtime/pprof"
+	"sync"
 )
 
 const (
 	ConfigPath = "./application.yaml"
 )
 
+var Empty = &struct{}{}
+var innerRouter *GoftTree // inner tree node . backup httpmethod and path
+var innerRouter_once sync.Once
+
+func getInnerRouter() *GoftTree {
+	innerRouter_once.Do(func() {
+		innerRouter = NewGoftTree()
+	})
+	return innerRouter
+}
+
 type Gofk struct {
 	engine      *gin.Engine
-	group       *gin.RouterGroup //路由分组
-	file        *config.File     //配置文件
-	beanFactory *BeanFactory     //注解、依赖注入
+	group       *gin.RouterGroup       //路由分组
+	file        *config.File           //配置文件
+	beanFactory *BeanFactory           //注解、依赖注入
+	exprData    map[string]interface{} //表达式
 }
 
 func Ignite() *Gofk {
-	g := &Gofk{engine: gin.New(), beanFactory: NewBeanFactory()}
+	g := &Gofk{engine: gin.New(),
+		beanFactory: NewBeanFactory(),
+		exprData:    map[string]interface{}{},
+	}
 
 	g.engine.Use(errorx.ErrorHandler())
 	return g
@@ -72,21 +89,22 @@ func (g *Gofk) Handle(httpMethod, relativePath string, handlers interface{}) *Go
 	return g
 }
 
-func (g *Gofk) Attach(f Fairing) *Gofk {
-	g.engine.Use(func(context *gin.Context) {
-		err := f.OnRequest(context)
-		if err != nil {
-			context.AbortWithStatusJSON(400, gin.H{"error": err.Error()})
-		} else {
-			context.Next()
-		}
-	})
+func (g *Gofk) Attach(fs ...Fairing) *Gofk {
+	for _, f := range fs {
+		Injector.BeanFactory.Set(f)
+	}
+
+	onceFairingHandler().AddFairing(fs...)
 	return g
 }
 
 //处理依赖注入
 
-func (g *Gofk) Beans(beans ...interface{}) *Gofk {
+func (g *Gofk) Beans(beans ...Bean) *Gofk {
+	//取出Bean的名称，然后加入到 exprData 里面
+	for _, bean := range beans {
+		g.exprData[bean.Name()] = bean
+	}
 	g.beanFactory.setBean(beans...)
 	return g
 }
@@ -94,20 +112,35 @@ func (g *Gofk) Beans(beans ...interface{}) *Gofk {
 func (g *Gofk) Mount(group string, classes ...IClass) *Gofk {
 	g.group = g.engine.Group(group)
 	for _, class := range classes {
-		class.Build(g) //挂载路由
-		//g.setProp(class) //挂载db数据库
-		g.beanFactory.inject(class)
+		class.Build(g)              //挂载路由
+		g.beanFactory.inject(class) //处理注解
+		g.Beans(class)              //处理路由中的任务（表达式任务）
 	}
 	return g
 }
 
-func (g *Gofk) Cron(expr string, f func()) *Gofk {
-	_, err := thread.GetCronTask().AddFunc(expr, f)
-	if err != nil {
-		log.Println("add cron is failed", err)
+func (g *Gofk) Cron(cron string, expr interface{}) *Gofk {
+	var err error
+
+	switch expr.(type) {
+	case func():
+		f := expr.(func())
+		_, err = thread.GetCronTask().AddFunc(cron, f)
+	case Expr:
+		exp := expr.(Expr) //这里的 exp 就是传入的 表达式
+		_, err = thread.GetCronTask().AddFunc(cron, func() {
+			_, expErr := ExecExpr(exp, g.exprData) //处理表达式
+			if expErr != nil {
+				log.Println(expErr)
+			}
+		})
+	default:
+		log.Fatalln("计划任务 Func 配置有误")
 	}
 
-	//启动定时任务放在 lunch 函数中执行
+	if err != nil {
+		log.Println(err)
+	}
 	return g
 }
 
