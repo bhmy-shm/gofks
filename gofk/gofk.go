@@ -50,10 +50,12 @@ func (g *Gofk) Launch() {
 		err  error
 	)
 	//判断是否存在配置文件并转换成map进行记录
-	if g.file.GetConf() != nil {
-		//如果已经存在配置文件记录，则通过配置文件拿到port端口号并启动服务
-		port, err = config.GetPath("Server", "port").Int()
-		errorx.Error(err)
+	if g.file != nil {
+		if g.file.GetConf() != nil {
+			//如果已经存在配置文件记录，则通过配置文件拿到port端口号并启动服务
+			port, err = config.GetPath("Server", "port").Int()
+			errorx.Error(err)
+		}
 	}
 
 	//如果没有生成配置记录则走默认端口号
