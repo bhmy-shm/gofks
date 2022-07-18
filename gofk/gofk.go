@@ -2,11 +2,11 @@ package gofk
 
 import (
 	"fmt"
-	"github.com/gin-gonic/gin"
 	"github.com/bhmy-shm/gofks/ifac"
 	"github.com/bhmy-shm/gofks/pkg/config"
 	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"github.com/bhmy-shm/gofks/pkg/thread"
+	"github.com/gin-gonic/gin"
 	"log"
 	"net/http"
 	"os"
@@ -19,8 +19,9 @@ const (
 
 type Gofk struct {
 	engine      *gin.Engine
-	group       *gin.RouterGroup
-	beanFactory *BeanFactory //注解、依赖注入
+	group       *gin.RouterGroup //路由分组
+	file        *config.File     //配置文件
+	beanFactory *BeanFactory     //注解、依赖注入
 }
 
 func Ignite() *Gofk {
@@ -28,15 +29,35 @@ func Ignite() *Gofk {
 
 	g.engine.Use(errorx.ErrorHandler())
 	g.beanFactory.setBean(config.InitSysConfig())
-
 	return g
 }
 
+func (g *Gofk) Watcher() {
+
+	f, err := config.LoadFile()
+	errorx.Error(err, "读取监听配置文件失败")
+
+	g.file = f
+	g.file.YamlMerge() //yaml的方式加载conf 到f对象，以及内存当中
+
+	//协程监听更新config文件
+	go config.ReadWatcher(g.file)
+}
+
 func (g *Gofk) Launch() {
-	var port = 8080
-	if conf := g.beanFactory.GetBean(new(config.SysConfig)); conf != nil {
-		port = conf.(*config.SysConfig).Server.Port
+	var (
+		port int
+		err  error
+	)
+	//判断是否存在配置文件并转换成map进行记录
+	if g.file.GetConf() != nil {
+		//如果已经存在配置文件记录，则通过配置文件拿到port端口号并启动服务
+		port, err = config.GetPath("Server", "port").Int()
+		errorx.Error(err)
 	}
+
+	//如果没有生成配置记录则走默认端口号
+	port = 8080
 
 	//启动定时任务
 	thread.GetCronTask().Start()
