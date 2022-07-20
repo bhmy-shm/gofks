@@ -1,27 +1,25 @@
 package gofk
 
-type Resp struct {
+import "github.com/gin-gonic/gin"
+
+type resp struct {
 	Code    int
 	Message string
 	Data    interface{}
 }
 
-func (r *Resp) String() string {
-	return "Response"
-}
-
-func Successful(data interface{}) Resp {
-	return Resp{
+func Successful(ctx *gin.Context, data interface{}) {
+	ctx.JSON(200, resp{
 		Code:    20000,
 		Message: "执行成功",
 		Data:    data,
-	}
+	})
 }
 
-func InternalResp(data interface{}) Resp {
-	return Resp{
+func InternalResp(ctx *gin.Context, data interface{}) {
+	ctx.JSON(200, resp{
 		Code:    50010,
 		Message: "处理失败",
 		Data:    data,
-	}
+	})
 }

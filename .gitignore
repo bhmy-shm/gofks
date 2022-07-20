@@ -1,5 +1,4 @@
 .idea
 cmd
-main.go
 application.yaml
 BeanExprLib/BeanExpr.g4

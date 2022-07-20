@@ -2,9 +2,9 @@ package gofk
 
 type IClass interface {
 	Build(*Gofk)
-	Name() string
+	Injector() string
 }
 
 type Bean interface {
-	Name() string
+	Injector() string
 }

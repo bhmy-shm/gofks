@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/bhmy-shm/gofks/Injector"
 	expr2 "github.com/bhmy-shm/gofks/expr"
+	"github.com/bhmy-shm/gofks/middle"
 	"github.com/bhmy-shm/gofks/pkg/config"
 	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"github.com/bhmy-shm/gofks/pkg/thread"
@@ -11,30 +12,15 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"reflect"
 	"runtime/pprof"
-	"sync"
 )
-
-const (
-	ConfigPath = "./application.yaml"
-)
-
-var Empty = &struct{}{}
-var innerRouter *GoftTree // inner tree node . backup httpmethod and path
-var innerRouter_once sync.Once
-
-func getInnerRouter() *GoftTree {
-	innerRouter_once.Do(func() {
-		innerRouter = NewGoftTree()
-	})
-	return innerRouter
-}
 
 type Gofk struct {
 	engine   *gin.Engine
-	group    *gin.RouterGroup       //路由分组
-	file     *config.File           //配置文件
-	exprData map[string]interface{} //表达式
+	group    *gin.RouterGroup
+	exprData map[string]interface{}
+	file     *config.File //配置文件
 }
 
 func Ignite() *Gofk {
@@ -42,7 +28,52 @@ func Ignite() *Gofk {
 		exprData: map[string]interface{}{},
 	}
 
-	g.engine.Use(errorx.ErrorHandler())
+	g.engine.Use(middle.ErrorHandler())
+	return g
+}
+
+func (g *Gofk) Root(path string) *Gofk {
+	g.group = g.engine.Group(path)
+	return g
+}
+
+func (g *Gofk) Group(groupPath string) *gin.RouterGroup {
+
+	if g.group != nil {
+		return g.group.Group(groupPath)
+	}
+
+	//每次需要新增加一个路由
+	return g.engine.Group(groupPath)
+}
+
+func (g *Gofk) Attach(handlerFunc ...gin.HandlerFunc) *Gofk {
+	if g.group == nil {
+		g.group = g.engine.Group("")
+	}
+	g.group.Use(handlerFunc...)
+	return g
+}
+
+func (g *Gofk) Beans(beans ...Bean) *Gofk {
+	//取出Bean的名称，然后加入到 exprData 里面
+	for _, bean := range beans {
+		g.exprData[bean.Injector()] = bean
+		injector.BeanFactory.Set(bean)
+	}
+	return g
+}
+
+func (g *Gofk) Mount(classes ...IClass) *Gofk {
+	for _, class := range classes {
+		class.Build(g) //挂载路由
+		g.Beans(class) //处理路由中的任务（表达式任务）
+	}
+	return g
+}
+
+func (g *Gofk) Config(beans ...interface{}) *Gofk {
+	injector.BeanFactory.Config(beans...)
 	return g
 }
 
@@ -56,64 +87,6 @@ func (g *Gofk) Watcher() *Gofk {
 
 	//协程监听更新config文件
 	go config.ReadWatcher(g.file)
-	return g
-}
-
-func (g *Gofk) Launch() {
-	var (
-		port = 8080
-		err  error
-	)
-	//判断是否存在配置文件并转换成map进行记录
-	if g.file != nil {
-		if g.file.GetConf() != nil {
-			//如果已经存在配置文件记录，则通过配置文件拿到port端口号并启动服务
-			port, err = config.GetPath("Server", "port").Int()
-			errorx.Error(err)
-		}
-	}
-
-	//启动定时任务
-	thread.GetCronTask().Start()
-
-	//Run gin
-	g.engine.Run(fmt.Sprintf(":%d", port))
-}
-
-func (g *Gofk) Handle(httpMethod, relativePath string, handlers interface{}) *Gofk {
-	//传入的 handlers 业务函数，会在Convert里面判断具体类型，最终返回的是 gin.HandleFunc
-	if h := Convert(handlers); h != nil {
-		g.engine.Handle(httpMethod, relativePath, h)
-	}
-	return g
-}
-
-func (g *Gofk) Attach(fs ...Fairing) *Gofk {
-	for _, f := range fs {
-		Injector.BeanFactory.Set(f)
-	}
-
-	onceFairingHandler().AddFairing(fs...)
-	return g
-}
-
-//处理依赖注入
-
-func (g *Gofk) Beans(beans ...Bean) *Gofk {
-	//取出Bean的名称，然后加入到 exprData 里面
-	for _, bean := range beans {
-		g.exprData[bean.Name()] = bean
-		Injector.BeanFactory.Set(bean)
-	}
-	return g
-}
-
-func (g *Gofk) Mount(group string, classes ...IClass) *Gofk {
-	g.group = g.engine.Group(group)
-	for _, class := range classes {
-		class.Build(g) //挂载路由
-		g.Beans(class) //处理路由中的任务（表达式任务）
-	}
 	return g
 }
 
@@ -140,6 +113,39 @@ func (g *Gofk) Cron(cron string, expr interface{}) *Gofk {
 		log.Println(err)
 	}
 	return g
+}
+
+func (g *Gofk) applyAll() {
+	for t, v := range injector.BeanFactory.GetBeanMapper() {
+		if t.Elem().Kind() == reflect.Struct {
+			injector.BeanFactory.Apply(v.Interface())
+		}
+	}
+}
+
+func (g *Gofk) Launch() {
+	var (
+		port = 8080
+		err  error
+	)
+
+	//判断是否存在配置文件并转换成map进行记录
+	if g.file != nil {
+		if g.file.GetConf() != nil {
+			//如果已经存在配置文件记录，则通过配置文件拿到port端口号并启动服务
+			port, err = config.GetPath("Server", "port").Int()
+			errorx.Error(err)
+		}
+	}
+
+	//启动定时任务
+	thread.GetCronTask().Start()
+
+	//加载依赖注入
+	g.applyAll()
+
+	//启动服务
+	g.engine.Run(fmt.Sprintf(":%d", port))
 }
 
 func (g *Gofk) PProf(path string) {
