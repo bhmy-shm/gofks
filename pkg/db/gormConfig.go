@@ -1,11 +1,13 @@
 package db
 
 import (
+	"encoding/json"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
 	"log"
+	"reflect"
 )
 
 type DbConfig struct{}
@@ -31,4 +33,23 @@ func (this *DbConfig) GormDb() *gorm.DB {
 
 func (this *DbConfig) Injector() string {
 	return "dbConfig"
+}
+
+func (this *DbConfig) FindById(model interface{}, id int) []byte {
+	newStruct := reflect.New(reflect.TypeOf(model))
+
+	var (
+		data = newStruct.Interface()
+	)
+
+	err := this.GormDb().Model(newStruct.Interface()).Where("id = ?", id).Find(&data).Error
+	if err != nil {
+		log.Fatalln("findById is err=", err)
+	}
+
+	buf, err := json.Marshal(data)
+	if err != nil {
+		log.Fatalln("data marshal to string is failed", err)
+	}
+	return buf
 }

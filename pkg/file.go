@@ -1,9 +1,8 @@
-package config
+package pkg
 
 import (
 	"crypto/md5"
 	"fmt"
-	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"io/ioutil"
 	"log"
 	"os"
@@ -65,14 +64,14 @@ func (f *File) Read() (*File, error) {
 	//读取文件内容,必须用这个ReadFile
 	b, err := ioutil.ReadFile(f.path)
 	if err != nil {
-		return nil, errorx.FileReadFail
+		return nil, FileReadFail
 	}
 	f.yaml = b
 
 	//判断文件是否存在，拿到文件的详细信息
 	info, err := fh.Stat()
 	if err != nil {
-		return nil, errorx.FileNotExist
+		return nil, FileNotExist
 	}
 
 	cs := &ChangeSet{

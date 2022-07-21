@@ -1,4 +1,4 @@
-package config
+package pkg
 
 import (
 	"log"
@@ -16,7 +16,7 @@ func TestLoadFile(t *testing.T) {
 	//开启监听
 	go ReadWatcher(f)
 
-	d,err := GetPath("Server","port").Int()
+	d, err := GetPath("Server", "port").Int()
 	if err != nil {
 		log.Println(err)
 	}

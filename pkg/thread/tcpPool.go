@@ -3,7 +3,7 @@ package thread
 import (
 	"errors"
 	"fmt"
-	"github.com/bhmy-shm/gofks/pkg/errorx"
+	"github.com/bhmy-shm/gofks/pkg"
 	"sync"
 	"time"
 )
@@ -110,7 +110,7 @@ func (c *ChanPool) Get() (interface{}, error) {
 	//拿到连接池
 	conns := c.getConns()
 	if conns == nil {
-		return nil, errorx.ErrClosed
+		return nil, pkg.ErrClosed
 	}
 
 	//遍历连接池,如果存在连接，判断后直接返回该连接。如果没有连接，创建一个连接并返回。
@@ -118,7 +118,7 @@ func (c *ChanPool) Get() (interface{}, error) {
 		select {
 		case wrapConn := <-conns:
 			if wrapConn == nil {
-				return nil, errorx.ErrClosed
+				return nil, pkg.ErrClosed
 			}
 			//判断当前连接是否超时，超时则直接丢弃连接(用临时变量进行判断)
 			if timeout := c.idleTimeout; timeout > 0 {
@@ -147,11 +147,11 @@ func (c *ChanPool) Get() (interface{}, error) {
 
 			//如果当前连接数 >= 最大连接数，则代表连接池满了
 			if c.openingConns >= c.maxActive {
-				return nil, errorx.ErrMaxActiveConnReached
+				return nil, pkg.ErrMaxActiveConnReached
 			}
 			//如果还没有创建
 			if c.factory == nil {
-				return nil, errorx.ErrClosed
+				return nil, pkg.ErrClosed
 			}
 			//直接创建一个连接
 			conn, err := c.factory()

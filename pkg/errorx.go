@@ -1,8 +1,7 @@
-package errorx
+package pkg
 
 import (
 	"errors"
-	"github.com/gin-gonic/gin"
 )
 
 const (
@@ -12,6 +11,10 @@ const (
 var (
 	ErrMaxActiveConnReached = errors.New("MaxActiveConnReached")
 	ErrClosed               = errors.New("pool is closed")
+
+	FileNotExist    = errors.New("the file in the path does not exist")
+	FileReadFail    = errors.New("failed to read the file content. Procedure")
+	WatcherFileStop = errors.New("water stopped")
 )
 
 func Error(err error, format ...string) {
@@ -24,9 +27,4 @@ func Error(err error, format ...string) {
 		}
 		panic(errMsg)
 	}
-}
-
-func Throw(err string, code int, context *gin.Context) {
-	context.Set(HTTP_STATUS, code)
-	panic(err)
 }

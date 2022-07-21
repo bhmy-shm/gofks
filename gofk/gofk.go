@@ -5,8 +5,7 @@ import (
 	"github.com/bhmy-shm/gofks/Injector"
 	expr2 "github.com/bhmy-shm/gofks/expr"
 	"github.com/bhmy-shm/gofks/middle"
-	"github.com/bhmy-shm/gofks/pkg/config"
-	"github.com/bhmy-shm/gofks/pkg/errorx"
+	"github.com/bhmy-shm/gofks/pkg"
 	"github.com/bhmy-shm/gofks/pkg/thread"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -20,7 +19,7 @@ type Gofk struct {
 	engine   *gin.Engine
 	group    *gin.RouterGroup
 	exprData map[string]interface{}
-	file     *config.File //配置文件
+	file     *pkg.File //配置文件
 }
 
 func Ignite() *Gofk {
@@ -79,14 +78,14 @@ func (g *Gofk) Config(beans ...interface{}) *Gofk {
 
 func (g *Gofk) Watcher() *Gofk {
 
-	f, err := config.LoadFile()
-	errorx.Error(err, "读取监听配置文件失败")
+	f, err := pkg.LoadFile()
+	pkg.Error(err, "读取监听配置文件失败")
 
 	g.file = f
 	g.file.YamlMerge() //yaml的方式加载conf 到f对象，以及内存当中
 
 	//协程监听更新config文件
-	go config.ReadWatcher(g.file)
+	go pkg.ReadWatcher(g.file)
 	return g
 }
 
@@ -133,8 +132,8 @@ func (g *Gofk) Launch() {
 	if g.file != nil {
 		if g.file.GetConf() != nil {
 			//如果已经存在配置文件记录，则通过配置文件拿到port端口号并启动服务
-			port, err = config.GetPath("Server", "port").Int()
-			errorx.Error(err)
+			port, err = pkg.GetPath("Server", "port").Int()
+			pkg.Error(err)
 		}
 	}
 

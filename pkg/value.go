@@ -1,4 +1,4 @@
-package config
+package pkg
 
 import (
 	"bytes"
@@ -23,6 +23,13 @@ func newValue(data interface{}) Value {
 		res.n = data
 	}
 	return res
+}
+
+func UnwrapValue(data interface{}) Value {
+	if data == nil {
+		return nil
+	}
+	return value{n: data}
 }
 
 func (v value) Bool() (bool, error) {
@@ -51,6 +58,41 @@ func (v value) Float64() (float64, error) {
 		return s, nil
 	}
 	return 0.0, errors.New("type assertion to int failed")
+}
+
+func (v value) Slice() ([]interface{}, error) {
+	if a, ok := (v.n).([]interface{}); ok {
+		return a, nil
+	}
+	return nil, errors.New("type assertion to []interface{} failed")
+}
+
+func (v value) Interface() interface{} {
+	return v.n
+}
+
+func (v value) StringSlice() []string {
+	arr, err := v.Slice()
+	if err != nil {
+		return nil
+	}
+	retArr := make([]string, len(arr))
+	for i := 0; i < len(arr); i++ {
+		if arr[i] == nil {
+			retArr[i] = ""
+			continue
+		}
+		s, ok := arr[i].(string)
+		if !ok {
+			return nil
+		}
+		retArr[i] = s
+	}
+	return retArr
+}
+
+func (v value) Str() string {
+	return v.n.(string)
 }
 
 func (v value) Json() (string, error) {

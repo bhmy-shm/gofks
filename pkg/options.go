@@ -1,4 +1,4 @@
-package config
+package pkg
 
 type Options struct {
 	Encoding map[string]Encoder

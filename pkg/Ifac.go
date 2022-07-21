@@ -1,4 +1,4 @@
-package config
+package pkg
 
 //interface{} value 数据类型转换
 type Value interface {
@@ -7,6 +7,11 @@ type Value interface {
 	String() (string, error)
 	Float64() (float64, error)
 	Json() (string, error)
+	Interface() interface{}
+	Slice() ([]interface{}, error)
+	StringSlice() []string
+
+	Str() string
 }
 
 //文件监听
@@ -27,6 +32,5 @@ type Source interface {
 	Read() (*File, error)
 	Watch() (Watcher, error)
 	String() string
-
 	//Write(*ChangeSet) error
 }

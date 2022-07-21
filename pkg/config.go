@@ -1,4 +1,4 @@
-package config
+package pkg
 
 import (
 	"reflect"
@@ -101,6 +101,5 @@ func Strval(value interface{}) string {
 	default:
 		return ""
 	}
-
 	return key
 }
