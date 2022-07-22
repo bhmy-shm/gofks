@@ -40,8 +40,6 @@ func (s *helloServer) SyaHello(ctx context.Context, req *example.SayHelloRequest
 
 func (s *helloServer) mustEmbedUnimplementedHelloWorldServer() {}
 
-type testKey struct{}
-
 func TestServer2(t *testing.T) {
 	ctx := context.Background()
 	//ctx = context.WithValue(ctx, testKey{}, "test")
@@ -101,21 +99,21 @@ func TestClient(t *testing.T) {
 }
 
 func TestClient2(t *testing.T) {
+
 	var uHost = "127.0.0.1:8083"
+
 	//new grpc client
-	conn, err := Dial(context.Background(), WithEndpoint(uHost))
+	conn, err := DialCtx(context.Background(), WithEndpoint(uHost))
 	if err != nil {
 		log.Fatal(err)
 	}
+
 	client := example.NewHelloWorldClient(conn)
 	reply, err := client.SyaHello(context.Background(), &example.SayHelloRequest{Name: "kratos-shm"})
 	if err != nil {
 		log.Fatal(err)
 	}
 	log.Println(reply.Message)
-	//if err != nil {
-	//	log.Println(fmt.Errorf("failed to call : %v", err))
-	//}
 
 	//if !reflect.DeepEqual(reply.Message, "hello world successful") {
 	//	log.Println(fmt.Errorf("expect %s, got %s", "Hello kratos", reply.Message))

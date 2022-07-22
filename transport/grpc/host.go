@@ -1,10 +1,20 @@
-package host
+package grpc
 
 import (
 	"fmt"
 	"net"
+	"net/url"
 	"strconv"
 )
+
+// NewEndpoint new an Endpoint URL.
+func NewEndpoint(scheme, host string, isSecure bool) *url.URL {
+	var query string
+	if isSecure {
+		query = "isSecure=true"
+	}
+	return &url.URL{Scheme: scheme, Host: host, RawQuery: query}
+}
 
 // ExtractHostPort from address
 func ExtractHostPort(addr string) (host string, port uint64, err error) {

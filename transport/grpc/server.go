@@ -18,7 +18,6 @@ type ServerOption func(o *Server)
 
 type Server struct {
 	*grpc.Server
-	baseCtx context.Context
 	tlsConf *tls.Config
 	lis     net.Listener
 	err     error
@@ -56,7 +55,6 @@ func Timeout(timeout time.Duration) ServerOption {
 
 func NewServer(opts ...ServerOption) *Server {
 	srv := &Server{
-		baseCtx: context.Background(),
 		network: "tcp",
 		address: ":0",
 		health:  health.NewServer(),
@@ -64,23 +62,6 @@ func NewServer(opts ...ServerOption) *Server {
 	for _, o := range opts {
 		o(srv)
 	}
-
-	//unaryInts := []grpc.UnaryServerInterceptor{
-	//	srv.unaryServerInterceptor(),
-	//}
-	//streamInts := []grpc.StreamServerInterceptor{
-	//	srv.streamServerInterceptor(),
-	//}
-	//grpcOpts := []grpc.ServerOption{
-	//	grpc.ChainUnaryInterceptor(unaryInts...),
-	//	grpc.ChainStreamInterceptor(streamInts...),
-	//}
-	//if srv.tlsConf != nil {
-	//	grpcOpts = append(grpcOpts, grpc.Creds(credentials.NewTLS(srv.tlsConf)))
-	//}
-	//if len(srv.grpcOpts) > 0 {
-	//	grpcOpts = append(grpcOpts, srv.grpcOpts...)
-	//}
 
 	//
 	srv.Server = grpc.NewServer()
@@ -101,14 +82,9 @@ func (s *Server) Endpoint() (*url.URL, error) {
 
 // Start start the gRPC server.
 func (s *Server) Start(ctx context.Context) error {
-	//if s.err != nil {
-	//	return s.err
-	//}
-	//s.baseCtx = ctx
 
 	//todo log
 	log.Printf("[gRPC] server listening on: %s\n", s.lis.Addr().String())
-	//s.health.Resume()
 	return s.Serve(s.lis)
 }
 
