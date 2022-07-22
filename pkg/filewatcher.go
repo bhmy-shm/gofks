@@ -1,6 +1,7 @@
 package pkg
 
 import (
+	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"github.com/fsnotify/fsnotify"
 	"log"
 	"os"
@@ -31,7 +32,7 @@ func (w *watcher) Next() (*File, error) {
 	// is it closed?
 	select {
 	case <-w.exit:
-		return nil, WatcherFileStop
+		return nil, errorx.WatcherFileStop
 	default:
 	}
 
@@ -51,7 +52,7 @@ func (w *watcher) Next() (*File, error) {
 	case err := <-w.fw.Errors:
 		return nil, err
 	case <-w.exit:
-		return nil, WatcherFileStop
+		return nil, errorx.WatcherFileStop
 	}
 }
 

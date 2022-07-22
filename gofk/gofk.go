@@ -2,10 +2,11 @@ package gofk
 
 import (
 	"fmt"
-	"github.com/bhmy-shm/gofks/Injector"
 	expr2 "github.com/bhmy-shm/gofks/expr"
-	"github.com/bhmy-shm/gofks/middle"
+	"github.com/bhmy-shm/gofks/gofk/injector"
+	"github.com/bhmy-shm/gofks/gofk/middle"
 	"github.com/bhmy-shm/gofks/pkg"
+	"github.com/bhmy-shm/gofks/pkg/errorx"
 	"github.com/bhmy-shm/gofks/pkg/thread"
 	"github.com/gin-gonic/gin"
 	"log"
@@ -79,7 +80,9 @@ func (g *Gofk) Config(beans ...interface{}) *Gofk {
 func (g *Gofk) Watcher() *Gofk {
 
 	f, err := pkg.LoadFile()
-	pkg.Error(err, "读取监听配置文件失败")
+	if err != nil {
+		log.Fatalln("check the application.yaml file exists:", err)
+	}
 
 	g.file = f
 	g.file.YamlMerge() //yaml的方式加载conf 到f对象，以及内存当中
@@ -133,7 +136,7 @@ func (g *Gofk) Launch() {
 		if g.file.GetConf() != nil {
 			//如果已经存在配置文件记录，则通过配置文件拿到port端口号并启动服务
 			port, err = pkg.GetPath("Server", "port").Int()
-			pkg.Error(err)
+			errorx.Error(err)
 		}
 	}
 

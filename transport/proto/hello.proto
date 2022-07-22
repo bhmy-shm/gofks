@@ -1,0 +1,25 @@
+syntax = "proto3";
+
+option go_package = "transport/example";  //生成代码的路径
+package hello;
+
+service HelloWorld {
+  rpc SyaHello(SayHelloRequest) returns(SayHelloResponse) {}
+}
+
+message SayHelloRequest {
+  string name = 1;
+}
+
+message SayHelloResponse{
+  Error error = 1;
+  string message = 2;
+}
+
+message Error {
+  int32 code = 1;
+  string reason = 2;
+  string message = 3;
+  map<string, string> metadata = 4;
+};
+

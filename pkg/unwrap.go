@@ -46,5 +46,5 @@ func (r *InterfaceResult) UnwrapFunc(f func() interface{}) interface{} {
 	if r.err != nil {
 		return f()
 	}
-	return r.value.Interface()
+	return r.value
 }

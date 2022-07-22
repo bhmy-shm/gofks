@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"github.com/bhmy-shm/gofks/pkg"
 	"log"
+	"reflect"
 	"time"
 )
 
@@ -67,17 +68,26 @@ func (this *SimpleCache) GetCache(key string) (ret interface{}) {
 	if this.Policy != nil {
 		if err := this.Policy.Before(key); err != nil {
 			log.Fatalln(err)
-			return
 		}
 	}
 
 	switch this.Serializer {
 	case JSON:
-		ret = this.Operation.Get(key).UnwrapFunc(this.JsonSerializer(key))
+		ret = this.Operation.Get(key).UnwrapFunc(this.JsonSerializer())
 	case GOB:
-		ret = this.Operation.Get(key).UnwrapFunc(this.GobSerializer(key))
+		ret = this.Operation.Get(key).UnwrapFunc(this.GobSerializer())
 	default:
 		ret = nil
+	}
+
+	retof := reflect.TypeOf(ret)
+
+	if retof.Kind() == reflect.Ptr {
+		retof = retof.Elem()
+	}
+	if retof.Kind() == reflect.Struct {
+		vv := ret.(pkg.Value).Str()
+		ret = vv
 	}
 
 	//如果是空缓存则写入：key，空value
@@ -86,7 +96,7 @@ func (this *SimpleCache) GetCache(key string) (ret interface{}) {
 	//} else {
 	//	this.SetCache(key, ret) //反之将存在的数据写入redis数据库
 	//}
-	return
+	return ret
 }
 
 func (this *SimpleCache) GetCacheForObject(key string, obj interface{}) interface{} {
@@ -110,30 +120,30 @@ func (this *SimpleCache) GetCacheForObject(key string, obj interface{}) interfac
 	return nil
 }
 
-func (this *SimpleCache) JsonSerializer(key string) DBGetterFunc {
+func (this *SimpleCache) JsonSerializer() DBGetterFunc {
 	return func() interface{} {
 		obj := this.DBGetter() //拿到DBGetterFunc 获取的 newsmodel
 		if obj == nil {
-			return ""
+			return nil
 		}
 		b, err := json.Marshal(obj)
 		if err != nil {
-			return ""
+			return nil
 		}
 		return string(b)
 	}
 }
 
-func (this *SimpleCache) GobSerializer(key string) DBGetterFunc {
+func (this *SimpleCache) GobSerializer() DBGetterFunc {
 	return func() interface{} {
 		obj := this.DBGetter()
 		if obj == nil {
-			return ""
+			return nil
 		}
 		var buf = &bytes.Buffer{}
 		enc := gob.NewEncoder(buf)
 		if err := enc.Encode(obj); err != nil {
-			return ""
+			return nil
 		}
 		return buf.String()
 	}

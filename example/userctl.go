@@ -2,13 +2,15 @@ package user
 
 import (
 	"github.com/bhmy-shm/gofks/gofk"
+	"github.com/bhmy-shm/gofks/pkg/cache/noSql"
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 	"log"
 )
 
 type User struct {
-	Db *gorm.DB `inject:"-"`
+	Db    *gorm.DB           `inject:"-"`
+	Cache *noSql.SimpleCache `inject:"-"`
 }
 
 func UserController() *User {
@@ -24,7 +26,7 @@ func (this *User) UserDetail(ctx *gin.Context) {
 
 	var name string
 	if this.Db == nil {
-		log.Println("db 依赖注入初始化真的失败了")
+		log.Println("db 依赖注入初始化失败了")
 	} else {
 		err = this.Db.Table("users").Where("id = ?", 1).Find(&name).Error
 		if err != nil {
@@ -32,6 +34,16 @@ func (this *User) UserDetail(ctx *gin.Context) {
 			return
 		}
 	}
+
+	//this.Cache = noSql.GetCache().
+	//	SetOperation(noSql.StringType()).
+	//	Tactics(noSql.RegexpInterLength)
+	//
+	//this.Cache.DBGetter = func() pkg.Value {
+	//
+	//}
+	//
+	//this.Cache.GetCache(fmt.Sprintf("%d",101))
 
 	Data := &UserModel{
 		Id:      101,

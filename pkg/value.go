@@ -25,11 +25,11 @@ func newValue(data interface{}) Value {
 	return res
 }
 
-func UnwrapValue(data interface{}) Value {
+func UnwrapValue(data interface{}) *value {
 	if data == nil {
 		return nil
 	}
-	return value{n: data}
+	return &value{n: data}
 }
 
 func (v value) Bool() (bool, error) {
@@ -50,14 +50,14 @@ func (v value) String() (string, error) {
 	if s, ok := (v.n).(string); ok {
 		return s, nil
 	}
-	return "", errors.New("type assertion to int failed")
+	return "", errors.New("type assertion to String failed")
 }
 
 func (v value) Float64() (float64, error) {
 	if s, ok := (v.n).(float64); ok {
 		return s, nil
 	}
-	return 0.0, errors.New("type assertion to int failed")
+	return 0.0, errors.New("type assertion to Float64 failed")
 }
 
 func (v value) Slice() ([]interface{}, error) {
@@ -92,7 +92,10 @@ func (v value) StringSlice() []string {
 }
 
 func (v value) Str() string {
-	return v.n.(string)
+	if s, ok := (v.n).(string); ok {
+		return s
+	}
+	return ""
 }
 
 func (v value) Json() (string, error) {
@@ -123,4 +126,9 @@ func (v value) Json() (string, error) {
 	}
 	buf.WriteByte('}')
 	return buf.String(), nil
+}
+
+func (v value) SetN(n interface{}) value {
+	v.n = n
+	return v
 }

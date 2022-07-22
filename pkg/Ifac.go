@@ -10,7 +10,6 @@ type Value interface {
 	Interface() interface{}
 	Slice() ([]interface{}, error)
 	StringSlice() []string
-
 	Str() string
 }
 
