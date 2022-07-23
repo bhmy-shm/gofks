@@ -3,7 +3,6 @@ package grpc
 import (
 	"context"
 	"crypto/tls"
-	"github.com/bhmy-shm/gofks/transport/host"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/health"
 	"google.golang.org/grpc/health/grpc_health_v1"
@@ -104,11 +103,11 @@ func (s *Server) listenAndEndpoint() error {
 		}
 		s.lis = lis
 	}
-	addr, err := host.Extract(s.address, s.lis)
+	addr, err := Extract(s.address, s.lis)
 	if err != nil {
 		_ = s.lis.Close()
 		return err
 	}
-	s.endpoint = host.NewEndpoint("grpc", addr, s.tlsConf != nil)
+	s.endpoint = NewEndpoint("grpc", addr, s.tlsConf != nil)
 	return nil
 }
