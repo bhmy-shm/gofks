@@ -1,0 +1,49 @@
+server:
+  name: cascade-rpc
+  listener: 0.0.0.0:8083
+  mode: debug
+  timeout: 5
+  enablePProf: false    #启动pprof
+  enableCron: false     #启动计划任务
+  enableMetrics: true   #启动rpc的性能检测
+  passEncryption: false #启动密码加密功能
+
+log:
+  ServiceName: cascade-rpc
+  Mode: console
+  Encoding: json
+#  Path: logs
+  Level: debug
+  Compress: true
+  KeepDays: 3
+
+registry:
+  enable: false
+  namespace: default
+  endpoints:
+  dialTimeout:
+  ttl:
+  maxRetry:
+
+auth:
+  jwtSecret: ASD111
+  expire: 2000
+
+rpcServer:
+  strictControl:
+  timeout: 5
+  cpuThreshold:
+    
+db:
+  debug: info #info,error
+  types: PgSQL
+  dataSourceName: postgres://vroomdb:HitryVRoom123@10.35.149.23:31264/vroom-v2?sslmode=disable&options=--lock_timeout=5000&options=--statement_timeout=5000
+  maxIdleConns: 30
+  maxOpenConns: 300
+  maxLifetime:
+
+redis:
+  addr: 10.35.149.23:30501
+  pass:
+  type: node
+  tls:

@@ -1,0 +1,99 @@
+syntax = "proto3";
+
+package user;
+option go_package = "./user";
+
+message Status {
+  uint64 code = 1 [json_name = "code,required"];
+  string reason = 2;
+  string message = 3;
+  map<string, string> metadata = 4;
+};
+
+message PageParam {
+  int32 pageNum = 1; //当前页
+  int32 pageSize = 2; //查询数量
+}
+
+message SorterParam {
+  string field = 1;  //排序字段
+  Order order = 2;  //排序方式
+  enum Order {
+    ASC = 0;  //升序
+    DESC = 1;  //降序
+  }
+}
+
+service UserClient {
+  //用户配置
+  rpc Login(LoginReq)  returns (LoginResp);
+  rpc UpPass(UpPassReq) returns (UpPassResp);
+  rpc UserAdd(UserAddReq) returns (UserResp);
+  rpc UserEdit(UserEditReq) returns(UserResp);
+  rpc UserDel(UserDelReq) returns (UserResp);
+  rpc UserList(UserListReq) returns (UserListResp);
+}
+
+message User {
+  bool isTrusted = 14;
+  uint64 id = 1;
+  int64 orgID = 2;
+  uint64 roleID = 11;
+  uint32 userType = 3;
+  string orgName = 12;
+  string roleName = 13;
+  string account = 4;
+  string name = 5;
+  string pass = 6;
+  string gender = 7;
+  string mobile = 8;
+  string phone = 9;
+  int64 loginCount = 15;
+  repeated string keys = 10;
+}
+
+message UpPassReq {
+   string account = 1;
+   string password = 2;
+}
+
+message UpPassResp {
+  Status result = 1;
+}
+
+message LoginReq {
+  string account = 1;
+  string pass = 2;
+  string loginMethod = 3;
+}
+
+message LoginResp {
+  Status result = 1;
+  User user = 2;
+}
+
+message UserAddReq {
+  User userData = 1;
+}
+
+message UserEditReq {
+  User userData = 1;
+}
+
+message UserDelReq {
+  repeated uint64 ids = 1;
+}
+
+message UserResp {
+  Status result = 1;
+}
+
+message UserListReq {
+  PageParam page = 1;
+}
+
+message UserListResp {
+  Status result = 1;
+  int64 total = 2;
+  repeated User userList = 3;
+}

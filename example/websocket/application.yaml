@@ -1,0 +1,51 @@
+server:
+  name: websocket-agent
+  listener: 127.0.0.1:9090
+  mode: debug
+  timeout: 5
+  enablePProf: false
+  enableCron: false
+  enableMetrics: true
+  passEncryption: false
+
+log:
+  ServiceName: websocket-agent
+  Mode: console
+  Encoding: plain
+  Path: logs
+  Level: debug
+  Compress: true
+  KeepDays: 3
+
+registry:
+  enable: false
+  namespace: default
+  endpoints:
+  dialTimeout:
+  ttl:
+  maxRetry:
+
+auth:
+  jwtSecret: ASD111
+  expire: 2000
+
+rpcClient:
+  endpoints:
+    - 127.0.0.1:8082 #etcd?
+  target: 127.0.0.1:8082
+  app:
+  token:
+  nonBlock:
+  timeout: 1000
+
+cache:
+  network: tcp
+  addr: 10.35.149.23:30501
+  pass:
+  type: node
+  tls:
+
+ws:
+  sendBytes: 1024
+  nodeId: 12
+  maxConn: 200

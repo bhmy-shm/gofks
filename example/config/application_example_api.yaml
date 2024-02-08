@@ -1,0 +1,40 @@
+server:
+  name: monitor.rpc
+  listener: 0.0.0.0:9393
+  mode: 1
+  timeout: 20
+  enableWs: true        #启动ws
+  enablePProf: false    #启动pprof
+  enableCron: false     #启动计划任务
+  enableMetrics: true   #启动rpc的性能检测
+  passEncryption: false #启动密码加密功能
+
+log:
+  ServiceName: monitor-rpc
+  Mode: console
+  Encoding: plain
+  Path: logs
+  Level: debug
+  Compress: true
+  KeepDays: 3
+
+registry:
+  enable: false
+  namespace: default
+  endpoints:
+  dialTimeout:
+  ttl:
+  maxRetry:
+
+auth:
+  jwtSecret: ASD111
+  expire: 2000
+
+rpcClient:
+  endpoints:
+    - 
+  target:
+  app:
+  token:
+  nonBlock:
+  timeout:

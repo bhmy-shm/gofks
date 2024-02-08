@@ -1,0 +1,51 @@
+server:
+  name: monitor.rpc
+  listener: 0.0.0.0:9393
+  mode: 1
+  timeout: 201
+  enableWs: true        #启动ws
+  enablePProf: false    #启动pprof
+  enableCron: false     #启动计划任务
+  enableMetrics: true   #启动rpc的性能检测
+  passEncryption: false #启动密码加密功能
+
+log:
+  ServiceName: monitor-rpc
+  Mode: console
+  Encoding: plain
+  Path: logs
+  Level: debug
+  Compress: true
+  KeepDays: 3
+
+registry:
+  enable: false
+  namespace: default
+  endpoints:
+  dialTimeout:
+  ttl:
+  maxRetry:
+
+auth:
+  jwtSecret: ASD111
+  expire: 2000
+
+rpcServer:
+  strictControl:
+  timeout: 5
+  cpuThreshold:
+
+db:
+  debug: Info
+  types: PgSQL
+  dataSourceName:
+  maxIdleConns:
+  maxOpenConns:
+  maxLifetime:
+
+cache:
+  network: tcp
+  addr: 10.35.149.23:30501
+  pass:
+  type: node
+  tls:

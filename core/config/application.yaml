@@ -1,0 +1,44 @@
+server:
+  name: monitor.rpc
+  listener: 0.0.0.0:9393
+  mode: 1
+  timeout: 20
+  enablePProf: false    #启动pprof
+  enableCron: false     #启动计划任务
+  enableMetrics: true   #启动rpc的性能检测
+  passEncryption: false #启动密码加密功能
+
+log:
+  serviceName: monitor-rpc
+  mode: console
+  encoding: plain
+  path: logs
+  level: debug
+  compress: true
+  keepDays: 3
+
+registry:
+  enable: false
+  namespace: default
+  endpoints:
+  dialTimeout:
+  ttl:
+  maxRetry:
+
+auth:
+  jwtSecret: ASD111
+  expire: 2000
+
+rpcClient:
+  endpoints:
+    - 127.0.0.1:6379
+    - 127.0.0.1:6380
+  target:
+  app:
+  token: abasdasd
+  nonBlock:
+  timeout: 20
+
+aa:
+  hah: 11
+  a: sdasd

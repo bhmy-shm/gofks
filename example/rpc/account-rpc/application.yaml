@@ -1,0 +1,36 @@
+server:
+  name: account-rpc
+  listener: 0.0.0.0:8082
+  mode: debug
+  timeout: 5
+  enableWs: false
+  enablePProf: false    #启动pprof
+  enableCron: false     #启动计划任务
+  enableMetrics: true   #启动rpc的性能检测
+  passEncryption: false #启动密码加密功能
+
+log:
+  serviceName: account-rpc
+  mode: console
+  encoding: json
+  path: logs
+  level: debug
+  compress: true
+  keepDays: 3
+
+registry:
+  enable: false
+  namespace: default
+  endpoints:
+  dialTimeout:
+  ttl:
+  maxRetry:
+
+auth:
+  jwtSecret: ASD111
+  expire: 2000
+
+rpcServer:
+  strictControl:
+  timeout: 5
+  cpuThreshold:

@@ -1,0 +1,5 @@
+plugin:
+  name: haha
+  nodeId: 1
+  monitorEnable: false
+  registerEnable: false

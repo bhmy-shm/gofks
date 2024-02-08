@@ -1,0 +1,322 @@
+syntax = "proto3";
+
+package cascade;
+option go_package = "./cascade";
+import "google/protobuf/timestamp.proto";
+
+message Status {
+  uint64 Code = 1;
+  string reason = 2;
+  string message = 3;
+  map<string, string> metadata = 4;
+};
+
+message PageParam {
+  int32 pageNum = 1; //当前页
+  int32 pageSize = 2; //查询数量
+}
+
+message SorterParam {
+  string field = 1;  //排序字段
+  Order order = 2;  //排序方式
+  enum Order {
+    ASC = 0;  //升序
+    DESC = 1;  //降序
+  }
+}
+
+service CascadeClient {
+
+  // 上下级级联配置
+  rpc LowerCreate(ReqLowerCreate) returns (RespLowerCreate);
+  rpc LowerSearch(ReqLowerSearch) returns (RespLowerSearch);
+  rpc LowerUpdate(ReqLowerUpdate) returns (RespLowerUpdate);
+  rpc LowerDel(ReqLowerDel) returns (RespLowerDel);
+  rpc LowerGetInfo(ReqLowerGetInfo) returns (RespLowerGetInfo);
+
+  rpc SuperiorGet(ReqSuperiorGet) returns (RespSuperiorGet);
+  rpc SuperiorSet(ReqSuperiorSet) returns (RespSuperiorSet);
+
+  // 其它操作
+  rpc SyncTime(ReqSyncTime) returns(RespSyncTime);
+  rpc HeartBeat(ReqHeartBeat) returns(RespHeartBeat);
+
+  // 网关操作
+  rpc CallCreate(ReqCgwCallCreate) returns (RespCgwCallCreate);
+  rpc CallModify(ReqCgwCallModify) returns (RespCgwCallModify);
+  rpc CallDelete(ReqCgwCallDelete) returns (RespCgwCallDelete);
+  rpc CallGroupCall(ReqCgwCallGroupCall) returns (RespCgwCallGroupCall);
+  rpc CallSetMember(ReqCgwCallSetMember) returns (RespCgwCallSetMember);
+  rpc CallHangupUser(ReqCgwCallHangupUser) returns (RespCgwCallHangupUser);
+}
+
+message CascadeLower {
+  string CascadeId = 1;
+  string LowerGroupName = 2;
+  string LowerGid = 3;
+  string LowerSn = 4;
+  int64  LowerType = 5;
+  string Gid = 6;
+  string ApiAddr = 7;
+  string Name = 8;
+  string SipAddr = 9;
+  string AuthPwd = 10;
+  string AuthUser = 11;
+  string Webhook = 12;
+}
+message CascadeConnStatus {
+  int64 Status = 1;
+  int64 ErrCode = 2;
+}
+message CascadeSuperior {
+  string Name = 1;
+  google.protobuf.Timestamp LastHeartBeat = 2;
+  int64 Expire = 3;
+  string Sn = 4;
+  string SnList = 5;
+  string RemoteIp = 6;
+  string Webhook = 7;
+  string CbToken = 8;
+  int64  ConfCount = 9;
+  CascadeConnStatus ConnStatus = 10;
+}
+
+message ReqLowerCreate {
+  CascadeLower CascadeLowerCreate = 1;
+}
+message RespLowerCreate {
+  string CascadeId = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqLowerSearch {
+  string AnyKey = 1;
+  int64  PageSize = 2;
+  int64  PageNum = 3;
+  string Gid = 4;
+  bool   IgnoreChild = 5;
+}
+message RespLowerSearch {
+  int64 Total = 1;
+  repeated CascadeLower CascadeLowers = 2;
+  Status RpcStatus = 3;
+}
+
+message ReqLowerUpdate {
+  CascadeLower CascadeUpdate = 1;
+}
+message RespLowerUpdate {
+  string CascadeId = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqLowerDel {
+  string CascadeId = 1;
+  string Sn = 2;
+}
+message RespLowerDel {
+  string CascadeId = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqLowerGetInfo {
+  string CascadeId = 1;
+}
+message RespLowerGetInfo {
+  CascadeLower CascadeInfo = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqSuperiorGet {}
+message RespSuperiorGet {
+  CascadeSuperior Superior = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqSuperiorSet {}
+message RespSuperiorSet {}
+
+message ReqSuperiorDel {
+  string Sn = 1;
+}
+message RespSuperiorDel {
+  Status RpcStatus = 1;
+}
+
+message ReqSyncTime {
+  int64  Step = 1;
+  int64  Time = 2;
+  int64  Level = 3;
+  string RemoteIp = 4;
+  string Sn = 5;
+}
+message RespSyncTime {
+  int64 Step = 1;
+  int64 Level = 2;
+  Status RpcStatus = 3;
+}
+
+message ReqHeartBeat {
+  CascadeSuperior Superior = 1;
+  string LocalIP = 2;
+  bool IsPublicIP = 3;
+}
+message RespHeartBeat {
+  CascadeLower CascadeData = 1;
+  Status RpcStatus = 2;
+}
+
+// ===================================
+
+message Invitee {
+  repeated string Visitors = 1;
+  repeated string Members = 2;
+  repeated string None = 3;
+  int64 ObFlag = 4;
+}
+
+message TitleInfo {
+  string  BgColor = 1;
+  string  BgTransparency = 2;
+  string  Color = 3;
+  bool    Enable = 4;
+  string  Position = 5;
+  string  Size = 6;
+  string  Text = 7;
+}
+
+message RoomData {
+  string Cid = 1;
+  string Cuid = 2;
+  string ParentCid = 3;
+  string ParentCuid = 4;
+  int64 BeginTime = 5;
+  int64 EndTime = 6;
+  string Gid = 7;
+  string Vid = 8;
+  int32 Mode = 9;
+  string Dept_gid = 10;
+  string Name = 11;
+  string ZoneId = 12;
+  string Agenda = 13;
+  bool IsPoint2point = 14;
+}
+
+message MemberStatus {
+  string Nid = 1;
+  string Name = 2;
+  string Id = 3;
+  string Role = 4;
+  int64 ConfState = 5;
+  string Status = 6;
+  int64 Unifyrole = 7;
+  string Platform = 8;
+  int64 Mic = 9;
+  int64 Micdevicestatus = 10;
+  int64 Micoper = 11;
+  string Nakeplatform = 12;
+  bool Manuallydial = 13;
+  int64 Camera = 14;
+  int64 Speaker = 15;
+  int64 Streamindex = 16;
+  int64 Lastdialheartbeat = 17;
+  int64 Usermode = 18;
+  int64 Userlaststatus = 19;
+  string Proxylink = 20;
+  int64 Faceability = 21;
+  string NickName = 22;
+}
+
+message ReqCgwCallCreate {
+  string CascadeId = 1;
+  int64 CascadeType = 2;
+  int64 CascadeDemo = 3;
+  int64 ParentCascadeLevel = 4;
+  string ApiAddr = 5;
+  Invitee LowerInvitee = 6;
+  RoomData CreateRoomData = 7;
+  repeated CascadeLower CascadeLowers = 8;
+}
+message RespCgwCallCreate {
+  string Cid = 1;
+  string Cuid = 2;
+  int64 BeginTime = 3;
+  int64 EndTime = 4;
+  string Name = 5;
+  int32 Mode = 6;
+  repeated MemberStatus MemberStatus = 7;
+  repeated CascadeLower CascadeLowers = 8;
+  Status RpcStatus = 9;
+}
+
+message ReqCgwCallModify {
+  string CascadeId = 1;
+  int64 EndTime = 2;
+  int64 BeginTime = 3;
+  string Nid = 4;
+  string Cid = 5;
+  string Name = 6;
+  string Agenda = 7;
+  string ZoneId = 8;
+  int32 Mode = 9;
+}
+message RespCgwCallModify {
+  repeated CascadeLower CascadeLowers = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqCgwCallDelete {
+  string Cid = 1;
+  string CascadeId = 2;
+  int32 Force = 3;
+  uint64 FromSuperior = 4;
+}
+message RespCgwCallDelete {
+  repeated CascadeLower CascadeLowers = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqCgwCallGroupCall {
+  string Cid = 1;
+  string CascadeId = 2;
+}
+message RespCgwCallGroupCall {
+  string CascadeId = 1;
+  repeated string Called = 2;
+  Status RpcStatus = 3;
+}
+
+message ReqCgwCallSetMember {
+  string CascadeId = 1;
+  string Nid = 2;
+  string Cid = 3;
+  string ZoneId = 4;
+  repeated Invitee invitees = 5;
+}
+message RespCgwCallSetMember {
+  string CascadeId = 1;
+  repeated CascadeLower CascadeLowers = 2;
+  repeated MemberStatus memberStatus = 3;
+  Status RpcStatus = 4;
+}
+
+message ReqCgwCallHangupUser {
+  string CascadeId = 1;
+  string Nid = 2;
+  string Cid = 3;
+  repeated string Members = 4;
+}
+message RespCgwCallHangupUser {
+  string CascadeId = 1;
+  Status RpcStatus = 2;
+}
+
+message ReqHeartbeat {
+  string CascadeId = 1;
+  string LocalIP = 2;
+  bool IsPublicIP = 3;
+  cascade.CascadeSuperior SuperiorData = 4;
+}
+message RespHeartbeat {
+  CascadeLower CascadeData = 1;
+}

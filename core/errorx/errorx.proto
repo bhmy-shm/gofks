@@ -1,0 +1,12 @@
+syntax = "proto3";
+
+package errorx;
+
+option go_package = "pkg/errorx";
+
+message Status {
+  uint64 Code = 1;
+  string reason = 2;
+  string message = 3;
+  map<string, string> metadata = 4;
+};

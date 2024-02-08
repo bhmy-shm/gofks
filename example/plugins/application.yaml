@@ -1,0 +1,27 @@
+log:
+  ServiceName: plugins
+  Mode: console
+  Encoding: plain
+  Path: logs
+  Level: debug
+  Compress: true
+  KeepDays: 3
+
+registry:
+  enable: false
+  namespace: default
+  endpoints:
+  dialTimeout:
+  ttl:
+  maxRetry:
+
+auth:
+  jwtSecret: ASD111
+  expire: 2000
+
+plugin:
+  serviceName: plugins
+  nodeId: 12
+  monitorInterval: 20
+  monitorEnable: false
+  registerEnable: false
