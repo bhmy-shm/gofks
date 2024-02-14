@@ -4,12 +4,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/bhmy-shm/gofks/core/color"
 	gofkConfs "github.com/bhmy-shm/gofks/core/config/confs"
 	"github.com/bhmy-shm/gofks/core/errorx"
 	"io"
 	"log"
 	"os"
 	"path"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -183,7 +185,9 @@ func output(writer io.Writer, level string, val interface{}, fields ...LogField)
 	fields = append(fields, Field(callerKey, getCaller(callerDepth)))
 
 	switch atomic.LoadUint32(&encoding) {
-	case jsonEncodingType:
+	case plainEncodingType:
+		writePlainAny(writer, level, val, buildFields(fields...)...)
+	default:
 		entry := make(map[string]interface{})
 		for _, field := range fields {
 			entry[field.Key] = field.Value
@@ -195,20 +199,104 @@ func output(writer io.Writer, level string, val interface{}, fields ...LogField)
 	}
 }
 
+func writePlainAny(writer io.Writer, level string, val interface{}, fields ...string) {
+	level = wrapLevelWithColor(level)
+
+	switch v := val.(type) {
+	case string:
+		writePlainText(writer, level, v, fields...)
+	case error:
+		writePlainText(writer, level, v.Error(), fields...)
+	case fmt.Stringer:
+		writePlainText(writer, level, v.String(), fields...)
+	default:
+		var buf strings.Builder
+		buf.WriteString(time.Now().Format(timeFormat))
+		buf.WriteByte(plainEncodingSep)
+		buf.WriteString(level)
+		buf.WriteByte(plainEncodingSep)
+		if err := json.NewEncoder(&buf).Encode(val); err != nil {
+			log.Println(err.Error())
+			return
+		}
+
+		for _, item := range fields {
+			buf.WriteByte(plainEncodingSep)
+			buf.WriteString(item)
+		}
+		buf.WriteByte('\n')
+		if writer == nil {
+			log.Println(buf.String())
+			return
+		}
+
+		if _, err := fmt.Fprint(writer, buf.String()); err != nil {
+			log.Println(err.Error())
+		}
+	}
+}
+
 func writeJson(writer io.Writer, info interface{}) {
-	if content, err := json.MarshalIndent(info, "", "	"); err != nil {
+	if content, err := json.Marshal(info); err != nil {
 		log.Printf("[logx-write] writeJson Marshal failed:%v", err.Error())
 	} else if writer == nil {
 		log.Println(content)
 	} else {
+		writer.Write(append(content, '\n'))
 
-		content = bytes.ReplaceAll(content, []byte("\\n"), []byte("\n"))
-		content = bytes.ReplaceAll(content, []byte("\\t"), []byte("\t"))
+		//content = bytes.ReplaceAll(content, []byte("\\n"), []byte("\n"))
+		//content = bytes.ReplaceAll(content, []byte("\\t"), []byte("\t"))
+		//
+		//_, err = writer.Write(append(content, '\n'))
+		//if err != nil {
+		//	log.Printf("[logx-write] writeJson write failed:%v", err)
+		//}
+	}
+}
 
-		_, err = writer.Write(append(content, '\n'))
-		if err != nil {
-			log.Printf("[logx-write] writeJson write failed:%v", err)
-		}
+func wrapLevelWithColor(level string) string {
+	var colour color.Color
+	switch level {
+	case levelAlert:
+		colour = color.FgRed
+	case levelError:
+		colour = color.FgRed
+	case levelFatal:
+		colour = color.FgRed
+	case levelInfo:
+		colour = color.FgBlue
+	case levelSlow:
+		colour = color.FgYellow
+	case levelStat:
+		colour = color.FgGreen
+	}
+
+	if colour == color.NoColor {
+		return level
+	}
+
+	return color.WithColorPadding(level, colour)
+}
+
+func writePlainText(writer io.Writer, level, msg string, fields ...string) {
+	var buf strings.Builder
+	buf.WriteString(time.Now().Format(timeFormat))
+	buf.WriteByte(plainEncodingSep)
+	buf.WriteString(level)
+	buf.WriteByte(plainEncodingSep)
+	buf.WriteString(msg)
+	for _, item := range fields {
+		buf.WriteByte(plainEncodingSep)
+		buf.WriteString(item)
+	}
+	buf.WriteByte('\n')
+	if writer == nil {
+		log.Println(buf.String())
+		return
+	}
+
+	if _, err := fmt.Fprint(writer, buf.String()); err != nil {
+		log.Println(err.Error())
 	}
 }
 
@@ -227,4 +315,14 @@ func Field(key string, value interface{}) LogField {
 	default:
 		return LogField{Key: key, Value: val}
 	}
+}
+
+func buildFields(fields ...LogField) []string {
+	var items []string
+
+	for _, field := range fields {
+		items = append(items, fmt.Sprintf("%s=%v", field.Key, field.Value))
+	}
+
+	return items
 }

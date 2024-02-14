@@ -36,12 +36,17 @@ const (
 	levelAlert = "alert"
 	levelInfo  = "info"
 	levelError = "error"
+	levelFatal = "fatal"
 	levelStat  = "stat"
 	levelSlow  = "slow"
 )
 
 const (
 	jsonEncodingType = iota
+	plainEncodingType
+	jsonEncoding     = "json"
+	plainEncoding    = "plain"
+	plainEncodingSep = '\t'
 )
 
 const (

@@ -21,6 +21,12 @@ func SetUp(c gofkConfs.LogConfig) error {
 	SetLevel(c)
 
 	// encoding 编码方式
+	switch c.Encoding() {
+	case plainEncoding:
+		atomic.StoreUint32(&encoding, plainEncodingType)
+	default:
+		atomic.StoreUint32(&encoding, jsonEncodingType)
+	}
 
 	// mode 日志类型
 	switch c.Mode() {
@@ -84,6 +90,14 @@ type (
 		Value interface{}
 	}
 )
+
+// WithField k-v
+func WithField(k string, v interface{}) LogField {
+	return LogField{
+		Key:   k,
+		Value: v,
+	}
+}
 
 // WithKeepDays customizes logging to keep logs with days.
 func WithKeepDays(days int) LogOptionFunc {
@@ -171,7 +185,7 @@ func Close() error {
 
 // Error writes v into error log.
 func Error(v ...interface{}) {
-	errorTextSync(fmt.Sprintln(v...))
+	errorTextSync(fmt.Sprint(v...))
 }
 
 // Errorf writes v with format into error log.
@@ -187,7 +201,7 @@ func Errorw(msg string, fields ...LogField) {
 
 // Info writes v into error log.
 func Info(v ...interface{}) {
-	infoTextSync(fmt.Sprintln(v...))
+	infoTextSync(fmt.Sprint(v...))
 }
 
 // Infof writes v with format into error log.
@@ -202,7 +216,7 @@ func Infow(msg string, fields ...LogField) {
 
 // Stat writes v into error log.
 func Stat(v ...interface{}) {
-	statTextSync(fmt.Sprintln(v...))
+	statTextSync(fmt.Sprint(v...))
 }
 
 // Statf writes v with format into error log.
@@ -217,7 +231,7 @@ func Statw(msg string, fields ...LogField) {
 
 // Slow writes v into slow log.
 func Slow(v ...interface{}) {
-	slowTextSync(fmt.Sprintln(v...))
+	slowTextSync(fmt.Sprint(v...))
 }
 
 // Slowf writes v with format into slow log.

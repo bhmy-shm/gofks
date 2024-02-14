@@ -1,0 +1,19 @@
+server:
+  name: logtest
+  listener: 0.0.0.0:9393
+  mode: 1
+  timeout: 20
+  enableWs: false        #启动ws
+  enablePProf: false    #启动pprof
+  enableCron: false     #启动计划任务
+  enableMetrics: false   #启动rpc的性能检测
+  passEncryption: false #启动密码加密功能
+
+log:
+  serviceName: logtest
+  mode: console
+  encoding: plain
+  path: logs
+  level: debug
+  compress: true
+  keepDays: 3
