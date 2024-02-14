@@ -63,7 +63,8 @@ func LoadFile(opts ...OptionFunc) (*File, error) {
 
 func WithPath(path string) OptionFunc {
 	return func(o *Options) {
-		o.path = path
+		dir, _ := os.Getwd()
+		o.path = dir + "/" + path
 	}
 }
 

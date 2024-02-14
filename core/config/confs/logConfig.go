@@ -8,6 +8,7 @@ type (
 	logC struct {
 		ServiceName         string `yaml:"serviceName"`
 		Mode                string `yaml:"mode"`
+		Encoding            string `yaml:"encoding"`
 		TimeFormat          string `yaml:"timeFormat"`
 		Path                string `yaml:"path"`
 		Level               string `yaml:"level"`
@@ -19,6 +20,10 @@ type (
 
 func (c *LogConfig) IsLoad() bool {
 	return true
+}
+
+func (c *LogConfig) Encoding() string {
+	return c.LogC.Encoding
 }
 
 func (c *LogConfig) Mode() string {

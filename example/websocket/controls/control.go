@@ -13,7 +13,7 @@ func WsController() *WsCase {
 	return &WsCase{}
 }
 
-func (this *WsCase) Build(gofk *main.Gofk) {
+func (this *WsCase) Build(gofk *gofks.Gofk) {
 	ws := gofk.Group("/ws")
 	ws.GET("testHome", this.wsHome)
 	ws.Handle("GET", "server", this.wsServer)
