@@ -10,6 +10,12 @@ func WithReason(reason string) StatusFunc {
 	}
 }
 
+func WithField(key, value string) StatusFunc {
+	return func(status *Status) {
+		status.Metadata[key] = value
+	}
+}
+
 func (s *Status) StringTo16() string {
 	return fmt.Sprintf("0x%0*x  %s\n", 8, s.Code, s.Message)
 }

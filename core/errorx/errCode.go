@@ -156,6 +156,7 @@ func isStatus(err error, opts ...StatusFunc) (*Status, bool) {
 
 	if se, ok := err.(ErrCode); ok {
 		if ss, isFound = errMap[se]; isFound {
+			ss.Metadata = make(map[string]string)
 			for _, fn := range opts {
 				fn(ss)
 			}

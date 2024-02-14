@@ -64,3 +64,10 @@ func TestWrapErr(t *testing.T) {
 
 	log.Println(newErr)
 }
+
+func TestErrorFiled(t *testing.T) {
+
+	err := New(ErrCodeDBQueryFailed, WithField("hello", "world"))
+
+	log.Println(err.Error())
+}

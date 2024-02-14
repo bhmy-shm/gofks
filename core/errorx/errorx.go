@@ -37,9 +37,9 @@ func Wrap(err error, format string, a ...interface{}) error {
 	)
 
 	if ok := isErrCode(err); ok {
-		wrapErr = New(err.(ErrCode)).SetCause(err).SetStack()
+		wrapErr = New(err.(ErrCode)).setCause(err).setStack()
 	} else {
-		wrapErr = New(err, WithReason(cause.Error())).SetStack()
+		wrapErr = New(err, WithReason(cause.Error())).setStack()
 	}
 
 	return wrapErr
@@ -47,7 +47,7 @@ func Wrap(err error, format string, a ...interface{}) error {
 
 // WrapErr 原生err 携带 errCode 错误提示
 func WrapErr(err error, code ErrCode) error {
-	return New(code).SetCause(err).SetStack()
+	return New(code).setCause(err).setStack()
 }
 
 // Cause 返回调用链最底层错误的根因
@@ -106,12 +106,9 @@ func New(err error, opts ...StatusFunc) *Error {
 }
 
 func (e Error) Error() string {
-	//return fmt.Sprintf("Error: code=[%d],reason=[%s],message=[%s],cause=[%+v]",
-	//	e.Code, e.Reason, e.Message, e.cause)
-
 	str := e.Cause.Error()
 	e.Cause = nil
-	body, _ := json.MarshalIndent(e, "", "	")
+	body, _ := json.Marshal(e)
 	return string(body) + "\n cause: " + str
 }
 
@@ -124,29 +121,6 @@ func (e *Error) Is(err error) bool {
 	return false
 }
 
-// SetCause 写入错误根因
-func (e *Error) SetCause(err error) *Error {
-	if err != nil {
-		e.Cause = err
-		e.Status.Reason = err.Error()
-	}
-	return e
-}
-
-// SetStack 写入错误根因
-func (e *Error) SetStack() *Error {
-	e.Stack = stackToString(callers())
-	return e
-}
-
-// SetMetadata 写入错误的元数据信息
-func (e *Error) SetMetadata(md map[string]string) *Error {
-	if md != nil {
-		e.Metadata = md
-	}
-	return e
-}
-
 // GRPCStatus returns the Status represented by se.
 func (e *Error) GRPCStatus() *status.Status {
 	s, _ := status.New(ToGRPCCode(int(e.Code)), e.Message).
@@ -155,11 +129,6 @@ func (e *Error) GRPCStatus() *status.Status {
 			Metadata: e.Metadata,
 		})
 	return s
-}
-
-// 输出根因
-func (e *Error) causePrint() error {
-	return e.Cause
 }
 
 // Unwrap 忽略错误直接panic
@@ -174,6 +143,34 @@ func (e *Error) UnwrapFunc(f func() interface{}) {
 	if e.Status.Code != uint64(ErrCodeOK) {
 		f()
 	}
+}
+
+// SetCause 写入错误根因
+func (e *Error) setCause(err error) *Error {
+	if err != nil {
+		e.Cause = err
+		e.Status.Reason = err.Error()
+	}
+	return e
+}
+
+// SetStack 写入错误根因
+func (e *Error) setStack() *Error {
+	e.Stack = stackToString(callers())
+	return e
+}
+
+// SetMetadata 写入错误的元数据信息
+func (e *Error) setMetadata(md map[string]string) *Error {
+	if md != nil {
+		e.Metadata = md
+	}
+	return e
+}
+
+// 输出根因
+func (e *Error) causePrint() error {
+	return e.Cause
 }
 
 // ===================================================
