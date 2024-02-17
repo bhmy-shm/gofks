@@ -21,7 +21,7 @@ func (this *AccountCase) UserList(ctx *gin.Context) {
 	response := types.UserListResponse{}
 	err := ctx.ShouldBindJSON(params)
 	if err != nil {
-		main.ExceptionResp(ctx, errorx.ErrApiCodeShouldBindJSON)
+		gofks.ExceptionResp(ctx, errorx.ErrApiCodeShouldBindJSON)
 		return
 	}
 
@@ -47,10 +47,10 @@ func (this *AccountCase) UserList(ctx *gin.Context) {
 	case http.StatusOK, errorx.ErrCodeOK.Code():
 		response.Total = rpcResp.Total
 		response.List = rpcResp.UserList
-		main.Successful(ctx, response)
+		gofks.Successful(ctx, response)
 		return
 	default:
-		main.InternalResp(ctx, errorx.ErrStatus(status))
+		gofks.InternalResp(ctx, errorx.ErrStatus(status))
 		return
 	}
 }
@@ -65,7 +65,7 @@ func (this *AccountCase) UserAdd(ctx *gin.Context) {
 	params := &types.UserAddParams{}
 	err := ctx.ShouldBindJSON(params)
 	if err != nil {
-		main.ExceptionResp(ctx, errorx.ErrApiCodeShouldBindJSON)
+		gofks.ExceptionResp(ctx, errorx.ErrApiCodeShouldBindJSON)
 		return
 	}
 
@@ -99,9 +99,9 @@ func (this *AccountCase) UserAdd(ctx *gin.Context) {
 	logx.Info("rpc userAdd Resp status:", status)
 
 	if status.Code != http.StatusOK {
-		main.InternalResp(ctx, errorx.ErrStatus(status))
+		gofks.InternalResp(ctx, errorx.ErrStatus(status))
 	} else {
-		main.Successful(ctx, status)
+		gofks.Successful(ctx, status)
 	}
 
 }

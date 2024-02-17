@@ -13,7 +13,7 @@ func UserController() *AccountCase {
 	return &AccountCase{}
 }
 
-func (s *AccountCase) Build(gofk *main.Gofk) {
+func (s *AccountCase) Build(gofk *gofks.Gofk) {
 
 	account := gofk.Group("account")
 

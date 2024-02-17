@@ -100,7 +100,7 @@ func (g *Gofk) Launch() {
 // WireApply 配置依赖，注入注册
 func (g *Gofk) WireApply(beans ...interface{}) *Gofk {
 	injector.BeanFactory.Config(beans...)
-	g.applyAll()
+	//g.applyAll()
 	return g
 }
 
