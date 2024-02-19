@@ -23,8 +23,8 @@ func startSpan(ctx context.Context, method, target string) (context.Context, tra
 	name, attr := tracex.SpanInfo(method, target)
 
 	//指示这个跨度代表一个客户端请求操作
-	ctx, span := tr.Start(ctx, name, trace.WithSpanKind(
-		trace.SpanKindClient),
+	ctx, span := tr.Start(ctx, name,
+		trace.WithSpanKind(trace.SpanKindClient),
 		trace.WithAttributes(attr...),
 	)
 

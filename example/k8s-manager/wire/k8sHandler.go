@@ -3,6 +3,7 @@ package wire
 import "github.com/bhmy-shm/gofks/example/k8s-manager/internal/handler"
 
 type K8sHandler struct {
+	Mapper RESTMapper `inject:"-"`
 }
 
 func NewK8sHandler() *K8sHandler {
@@ -19,4 +20,8 @@ func (this *K8sHandler) PodHandler() *handler.PodHandler {
 
 func (this *K8sHandler) NsHandler() *handler.NsHandler {
 	return &handler.NsHandler{}
+}
+
+func (this *K8sHandler) MapperDo() {
+
 }

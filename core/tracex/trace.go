@@ -82,3 +82,5 @@ func Extract(ctx context.Context, p propagation.TextMapPropagator, metadata *met
 
 	return baggage.FromContext(ctx), sdktrace.SpanContextFromContext(ctx)
 }
+
+// ------

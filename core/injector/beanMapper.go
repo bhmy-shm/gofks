@@ -12,15 +12,16 @@ type BeanMapper struct {
 }
 
 func NewBeanMapper() *BeanMapper {
-	return &BeanMapper{mapping: &sync.Map{}}
+	return &BeanMapper{mapping: new(sync.Map)}
 }
 
 func (bm *BeanMapper) add(bean interface{}) {
 	t := reflect.TypeOf(bean)
 
-	if t.Kind() != reflect.Ptr {
+	if t.Kind() != reflect.Ptr && t.Kind() != reflect.Interface {
 		panic("require inject is must ptr object, can't(slice,map,channel,func)")
 	}
+
 	bm.mapping.Store(t, reflect.ValueOf(bean))
 }
 

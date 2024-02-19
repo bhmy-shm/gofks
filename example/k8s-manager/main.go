@@ -11,8 +11,9 @@ func main() {
 
 	gofks.Ignite("/v1", middlewares.OnRequest()).
 		WireApply(
+			wire.NewK8sResource(),
 			wire.NewK8sHandler(),
-			wire.NewK8sConfig(),
+			//wire.NewK8sConfig(),
 			wire.NewK8sMaps(),
 			wire.NewServiceWire(),
 		).

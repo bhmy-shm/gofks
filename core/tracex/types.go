@@ -21,6 +21,8 @@ const (
 	RpcMessageUncompressedSizeKey = attribute.Key("message.uncompressed_size")
 
 	SqlMethodKey = attribute.Key("sql.method")
+
+	HttpGinMethodKey = attribute.Key("gin.Status")
 )
 
 var (

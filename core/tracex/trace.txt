@@ -1,0 +1,73 @@
+{
+	"Name": "span-file-start",
+	"SpanContext": {
+		"TraceID": "3f0867e8303bafc065016bf996ec9994",
+		"SpanID": "3e25455dcf826389",
+		"TraceFlags": "01",
+		"TraceState": "",
+		"Remote": false
+	},
+	"Parent": {
+		"TraceID": "00000000000000000000000000000000",
+		"SpanID": "0000000000000000",
+		"TraceFlags": "00",
+		"TraceState": "",
+		"Remote": false
+	},
+	"SpanKind": 1,
+	"StartTime": "2024-02-18T14:41:48.249444+08:00",
+	"EndTime": "2024-02-18T14:41:50.250590833+08:00",
+	"Attributes": null,
+	"Events": null,
+	"Links": null,
+	"Status": {
+		"Code": "Unset",
+		"Description": ""
+	},
+	"DroppedAttributes": 0,
+	"DroppedEvents": 0,
+	"DroppedLinks": 0,
+	"ChildSpanCount": 0,
+	"Resource": [
+		{
+			"Key": "service.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "unknown_service:___github_com_bhmy_shm_gofks_core_tracex__TestTraceFileTest.test"
+			}
+		},
+		{
+			"Key": "service.namespace",
+			"Value": {
+				"Type": "STRING",
+				"Value": "myweb"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.language",
+			"Value": {
+				"Type": "STRING",
+				"Value": "go"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.name",
+			"Value": {
+				"Type": "STRING",
+				"Value": "opentelemetry"
+			}
+		},
+		{
+			"Key": "telemetry.sdk.version",
+			"Value": {
+				"Type": "STRING",
+				"Value": "1.23.1"
+			}
+		}
+	],
+	"InstrumentationLibrary": {
+		"Name": "testFileTrace",
+		"Version": "",
+		"SchemaURL": ""
+	}
+}
