@@ -11,7 +11,7 @@ import (
 
 func main() {
 
-	conf := gofkConf.New()
+	conf := gofkConf.Load()
 
 	serviceWire := wire.NewServiceWire(conf)
 

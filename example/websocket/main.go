@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	conf := gofkConf.New()
+	conf := gofkConf.Load()
 
 	gofks.WebSocket(conf, "/v1").
 		WireApply(

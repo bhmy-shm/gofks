@@ -17,8 +17,8 @@ var (
 )
 
 // SetUp sets up the logx.
-func SetUp(c gofkConfs.LogConfig) error {
-	SetLevel(c)
+func SetUp(c *gofkConfs.LogConfig) error {
+	SetLevel(*c)
 
 	// encoding 编码方式
 	switch c.Encoding() {
@@ -31,7 +31,7 @@ func SetUp(c gofkConfs.LogConfig) error {
 	// mode 日志类型
 	switch c.Mode() {
 	case fileMode:
-		return setupWithFiles(c)
+		return setupWithFiles(*c)
 	default:
 		setupWithConsole()
 		return nil

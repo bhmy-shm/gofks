@@ -39,6 +39,10 @@ rpcClient:
   nonBlock:
   timeout: 20
 
-aa:
-  hah: 11
-  a: sdasd
+trace:
+  name: usercenter-rpc
+  namespace: default
+  version: v1.0
+  endpoint: http://jaeger:14268/api/traces
+  sampler: 1.0
+  exporter: jaeger

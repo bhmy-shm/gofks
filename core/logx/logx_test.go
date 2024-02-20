@@ -29,7 +29,7 @@ func TestLogInfo(t *testing.T) {
 
 	conf := gofkConf.Load(gofkConf.WithPath("application_log.yaml"))
 
-	if err := SetUp(*conf.GetLog()); err != nil {
+	if err := SetUp(conf.GetLog()); err != nil {
 		log.Println("err:", err)
 	}
 

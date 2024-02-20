@@ -9,7 +9,7 @@ import (
 
 func main() {
 
-	conf := gofkConf.New()
+	conf := gofkConf.Load()
 
 	gofks.Ignite("/v1").
 		LoadWatch(conf).
