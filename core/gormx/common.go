@@ -3,6 +3,7 @@ package gormx
 import (
 	"context"
 	"fmt"
+	"github.com/bhmy-shm/gofks/core/breaker"
 	gofkConfs "github.com/bhmy-shm/gofks/core/config/confs"
 	"github.com/bhmy-shm/gofks/core/errorx"
 	"github.com/bhmy-shm/gofks/core/tracex"
@@ -13,9 +14,10 @@ import (
 
 type (
 	commonSql struct {
-		connProv connProvider //数据库连接
-		//熔断器
+		connProv connProvider    //数据库连接
+		brk      breaker.Breaker //熔断器
 		//事务
+		//数据库stat 统计
 	}
 	connProvider func() (*gorm.DB, error)
 	SqlOptions   func(newTx *gorm.DB) *gorm.DB
@@ -26,6 +28,7 @@ func NewSql(c *gofkConfs.DBConfig) SqlSession {
 		connProv: func() (*gorm.DB, error) {
 			return SqlInit(c)
 		},
+		brk: breaker.NewBreaker(),
 	}
 	return conn
 }
@@ -35,6 +38,7 @@ func NewSqlFromDB(db *gorm.DB) SqlSession {
 		connProv: func() (*gorm.DB, error) {
 			return db, nil
 		},
+		brk: breaker.NewBreaker(),
 	}
 	return conn
 }
