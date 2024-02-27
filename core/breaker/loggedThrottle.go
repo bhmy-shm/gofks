@@ -7,9 +7,9 @@ import (
 )
 
 type loggedThrottle struct {
-	name string
-	internalThrottle
-	errWin *errorWindow
+	name             string
+	internalThrottle              //内部熔断器接口，指向googleBreaker
+	errWin           *errorWindow //错误窗口
 }
 
 func newLoggedThrottle(name string, t internalThrottle) loggedThrottle {
@@ -20,6 +20,7 @@ func newLoggedThrottle(name string, t internalThrottle) loggedThrottle {
 	}
 }
 
+// 尝试获取正确的 googlePromise 对象，如果成功则返回一个 PromiseWithReason。无论是否成功都会记录ErrWindow日志
 func (lt loggedThrottle) allow() (Promise, error) {
 	promise, err := lt.internalThrottle.allow()
 	return promiseWithReason{
@@ -28,11 +29,15 @@ func (lt loggedThrottle) allow() (Promise, error) {
 	}, lt.logError(err)
 }
 
+// 调用 internalThrottle 来执行执行实际的请求，并根据结果进行统计。
 func (lt loggedThrottle) doReq(req func() error, fallback Fallback, acceptable Acceptable) error {
 
 	err := lt.internalThrottle.doReq(req, fallback, func(err error) bool {
+
+		//如果accept 返回false，表示错误不可以被接收记录为熔断错误，错误会被添加到错误窗口 errWin 中。（包含请求执行的错误结果）
 		accept := acceptable(err)
 		if !accept && err != nil {
+			//记录错误日志
 			lt.errWin.add(err.Error())
 		}
 		return accept

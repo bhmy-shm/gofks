@@ -23,6 +23,8 @@ type (
 )
 
 type (
+
+	//Breaker 熔断器行为实现
 	Breaker interface {
 		// Name 返回熔断器的名称
 		Name() string

@@ -45,17 +45,21 @@ func NewRollingWindow(size int, interval time.Duration, opts ...RollingWindowOpt
 func (rw *RollingWindow) Add(v float64) {
 	rw.lock.Lock()
 	defer rw.lock.Unlock()
-	rw.updateOffset()
+
+	rw.updateOffset() //更新当前滑动窗口状态，算法函数。决定当前要操作的桶的偏移量。
+
 	rw.win.add(rw.offset, v)
 }
 
 // Reduce 遍历所有桶（可选是否包含当前桶），并对它们执行一个回调函数
+// 用来计算桶中的值，和其他的统计信息。
 func (rw *RollingWindow) Reduce(fn func(b *Bucket)) {
 	rw.lock.RLock()
 	defer rw.lock.RUnlock()
 
 	var diff int
 	span := rw.span()
+
 	// ignore current bucket, because of partial data
 	if span == 0 && rw.ignoreCurrent {
 		diff = rw.size - 1
@@ -68,7 +72,8 @@ func (rw *RollingWindow) Reduce(fn func(b *Bucket)) {
 	}
 }
 
-// 计算自上次更新以来经过了多少时间间隔。
+// 计算自上次更新桶更新（updateOffset），经过了多少时间间隔。
+// 这个返回值，用来判断这些桶是否需要被重制。
 func (rw *RollingWindow) span() int {
 	offset := int(timex.Since(rw.lastTime) / rw.interval)
 	if 0 <= offset && offset < rw.size {
@@ -80,72 +85,26 @@ func (rw *RollingWindow) span() int {
 
 // 更新当前的偏移量，并重置过期的桶
 func (rw *RollingWindow) updateOffset() {
+
+	//计算上次桶更新以来经历了多少时间间隔，拿到的结果就是要重制的桶的数量
 	span := rw.span()
 	if span <= 0 {
+		//没有桶重置，直接返回。
 		return
 	}
 
 	offset := rw.offset
-	// reset expired buckets
+	// 遍历所有的过期桶，调用resetBucket进行重置。保证桶内的数据始终是最新的时间间隔内的数据。
 	for i := 0; i < span; i++ {
 		rw.win.resetBucket((offset + i + 1) % rw.size)
 	}
 
+	// 更新滑动窗口时间段，通过偏移量更新。
 	rw.offset = (offset + span) % rw.size
 	now := timex.Now()
-	// align to interval time boundary
+
+	// 更新最后一个桶的开始时间。对齐最近的时间间隔。
 	rw.lastTime = now - (now-rw.lastTime)%rw.interval
-}
-
-// Bucket defines the bucket that holds sum and num of additions.
-type Bucket struct {
-	Sum   float64 //存储桶中所有值的总和。
-	Count int64   //存储桶中值的数量
-}
-
-// 向桶中添加一个值，并更新计数
-func (b *Bucket) add(v float64) {
-	b.Sum += v
-	b.Count++
-}
-
-// 重置桶的状态
-func (b *Bucket) reset() {
-	b.Sum = 0
-	b.Count = 0
-}
-
-type window struct {
-	buckets []*Bucket // 存储所有桶的切片
-	size    int       //窗口大小，桶的数量
-}
-
-func newWindow(size int) *window {
-	buckets := make([]*Bucket, size)
-	for i := 0; i < size; i++ {
-		buckets[i] = new(Bucket)
-	}
-	return &window{
-		buckets: buckets,
-		size:    size,
-	}
-}
-
-// 在特定的偏移量处向桶中添加值
-func (w *window) add(offset int, v float64) {
-	w.buckets[offset%w.size].add(v)
-}
-
-// 从特定的起始点开始，对指定数量的桶执行一个函数。
-func (w *window) reduce(start, count int, fn func(b *Bucket)) {
-	for i := 0; i < count; i++ {
-		fn(w.buckets[(start+i)%w.size])
-	}
-}
-
-// 重置指定偏移量处的桶。
-func (w *window) resetBucket(offset int) {
-	w.buckets[offset%w.size].reset()
 }
 
 // IgnoreCurrentBucket 是一个 RollingWindowOption 函数，用于设置 ignoreCurrent 字段，让 Reduce 方法在执行时忽略当前的桶。

@@ -47,23 +47,33 @@ func newGoogleBreaker() *googleBreaker {
 	}
 }
 
+// 计算熔断器请求成功率，失败率。
+// 决定是否接收新的请求。根据滑动窗口中的统计数据和预设参数，来计算当前的请求接收率。
+// 如果计算的概率表明应该拒绝请求，则返回 Err
 func (b *googleBreaker) accept() error {
+
+	//获取在滑动窗口中成功接收的请求总数，以及所有请求总数
 	accepts, total := b.history()
+
+	//通过将接收的请求总数 * 系数k 进行计算；（应对突发流量）
+	//通过调整 k 的值，可以使熔断器对突发流量更加宽容或者更加严格。如果服务能够处理短时间的高负载，则可以设置更高的k值
 	weightedAccepts := b.k * float64(accepts)
 
 	//https://landing.google.com/sre/sre-book/chapters/handling-overload/#eq2101
-	// for better performance, no need to care about negative ratio
+	// 计算请求的拒绝概率，首先要减掉阈值，避免只有少量请求就触发熔断。
 	dropRatio := (float64(total-protection) - weightedAccepts) / float64(total+1)
 	if dropRatio <= 0 {
 		return nil
 	}
 
+	//判断是否接收请求
 	if b.proba.TrueOnProba(dropRatio) {
 		return ErrServiceUnavailable
 	}
 	return nil
 }
 
+// 提供外部调用的内部实现，判断是否允许请求通过。如果可以通过，则返回成功对象 googlePromise
 func (b *googleBreaker) allow() (internalPromise, error) {
 	if err := b.accept(); err != nil {
 		return nil, err
@@ -74,6 +84,7 @@ func (b *googleBreaker) allow() (internalPromise, error) {
 	}, nil
 }
 
+// 计算算法，返回在滑动窗口中成功接收的请求总数，以及所有请求数
 func (b *googleBreaker) history() (accepts, total int64) {
 	b.stat.Reduce(func(b *Bucket) {
 		accepts += int64(b.Sum)
@@ -82,6 +93,7 @@ func (b *googleBreaker) history() (accepts, total int64) {
 	return
 }
 
+// 执行实际的请求，并根据结果进行统计。记录标记成功或者失败。
 func (b *googleBreaker) doReq(req func() error, fallback Fallback, acceptable Acceptable) error {
 	if err := b.accept(); err != nil {
 		b.markFailure()
